@@ -1,33 +1,28 @@
-1 - Mettre les 124 grammes de farnine dans le recipient.
+1 - Mettre les 93 grammes de farnine dans le recipient.
 2 - Casser un oeuf et l'incorporer, oeuf n°1.
 3 - Casser un oeuf et l'incorporer, oeuf n°2.
 4 - Casser un oeuf et l'incorporer, oeuf n°3.
-5 - Casser un oeuf et l'incorporer, oeuf n°4.
-6 - Verser les 40 grammes de sucre.
-7 - Verser les 20 cl d'huile.
-8 - Incorporer le lait, total 40 - reste 40 cl.
-9 - Incorporer le lait, total 40 - reste 30 cl.
-10 - Incorporer le lait, total 40 - reste 20 cl.
-11 - Incorporer le lait, total 40 - reste 10 cl.
-12 - Mélanger le tout.
-13 - Faire chauffer la poele.
-14 - Attente montée en température - actuelle 20°C.
-15 - Attente montée en température - actuelle 30°C.
-16 - Attente montée en température - actuelle 40°C.
-17 - Attente montée en température - actuelle 50°C.
-18 - Attente montée en température - actuelle 60°C.
-19 - Attente montée en température - actuelle 70°C.
-20 - Attente montée en température - actuelle 80°C.
-21 - Attente montée en température - actuelle 90°C.
-22 - Faire cuire crepe n° 1.
-23 - Faire cuire crepe n° 2.
-24 - Faire cuire crepe n° 3.
-25 - Faire cuire crepe n° 4.
-26 - Faire cuire crepe n° 5.
-27 - Faire cuire crepe n° 6.
-28 - Faire cuire crepe n° 7.
-29 - Faire cuire crepe n° 8.
-30 - Faire cuire crepe n° 9.
-31 - Faire cuire crepe n° 10.
-32 - Faire cuire crepe n° 11.
-33 - Faire cuire crepe n° 12.
+5 - Verser les 30 grammes de sucre.
+6 - Verser les 15 cl d'huile.
+7 - Incorporer le lait, total 30 - reste 30 cl.
+8 - Incorporer le lait, total 30 - reste 20 cl.
+9 - Incorporer le lait, total 30 - reste 10 cl.
+10 - Mélanger le tout.
+11 - Faire chauffer la poele.
+12 - Attente montée en température - actuelle 20°C.
+13 - Attente montée en température - actuelle 30°C.
+14 - Attente montée en température - actuelle 40°C.
+15 - Attente montée en température - actuelle 50°C.
+16 - Attente montée en température - actuelle 60°C.
+17 - Attente montée en température - actuelle 70°C.
+18 - Attente montée en température - actuelle 80°C.
+19 - Attente montée en température - actuelle 90°C.
+20 - Faire cuire crepe n° 1.
+21 - Faire cuire crepe n° 2.
+22 - Faire cuire crepe n° 3.
+23 - Faire cuire crepe n° 4.
+24 - Faire cuire crepe n° 5.
+25 - Faire cuire crepe n° 6.
+26 - Faire cuire crepe n° 7.
+27 - Faire cuire crepe n° 8.
+28 - Faire cuire crepe n° 9.

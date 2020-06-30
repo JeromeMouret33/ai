@@ -1,11 +1,12 @@
 import os.path
+import sys
 
 INGREDIENT_FOLDER="ingredients"
 RECIPE_FILE="pancake-recipe.txt"
 LIQUID_UNIT="cl"
 SOLID_UNIT="g"
 TEMP=100
-NB_PEOPLE=4
+NB_PEOPLE=int(sys.argv[1])
 
 
 def ingredientList(path):
