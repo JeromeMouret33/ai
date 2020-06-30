@@ -1,0 +1,127 @@
+import os.path
+
+INGREDIENT_FOLDER="ingredients"
+RECIPE_FILE="pancake-recipe.txt"
+LIQUID_UNIT="cl"
+SOLID_UNIT="g"
+TEMP=100
+NB_PEOPLE=4
+
+
+def ingredientList(path):
+    fichier=[]
+    for root, dirs, files in os.walk(path):
+        for i in files:
+            fichier.append(os.path.join(root, i))
+    return fichier
+
+def validQuantityMessage(ingredient, quantity):
+    print(f"OK -- {ingredient} -> {quantity}")
+
+def ingredientCheck(nb):
+    global EGG_QUANTITY, SUGAR_QUANTITY, OIL_QUANTITY, MILK_QUANTITY, FLOUR_QUANTITY
+    EGG_QUANTITY=1 * nb
+    SUGAR_QUANTITY=10 * nb
+    OIL_QUANTITY=5 * nb
+    MILK_QUANTITY=10 * nb
+    FLOUR_QUANTITY=31 * nb
+    print("################################## Verification des ingrédients ##################################")
+    isValid=True
+    for ingredient in ingredientList(INGREDIENT_FOLDER):
+        f = open(ingredient, "r")
+        quantity=int(f.read())
+        ingredient=ingredient.split('/')[1].split('.')[0]
+        if(ingredient == "sucre"):
+            if(quantity >= SUGAR_QUANTITY):
+                validQuantityMessage(ingredient, quantity)
+            else:
+                isValid=False
+                print(f"KO -- {SUGAR_QUANTITY} {SOLID_UNIT} de suce requis -- quantité actuelle {quantity} !!!!!")
+        if(ingredient == "œufs"):
+            if(quantity >= EGG_QUANTITY):
+                validQuantityMessage(ingredient, quantity)
+            else:
+                isValid=False
+                print(f"KO -- {EGG_QUANTITY} oeufs requis -- quantité actuelle {quantity} !!!!!")
+        if(ingredient == "huile"):
+            if(quantity >= OIL_QUANTITY):
+                validQuantityMessage(ingredient, quantity)
+            else:
+                isValid=False
+                print(f"KO -- {OIL_QUANTITY} {LIQUID_UNIT} d'huile requis - quantité actuelle {quantity} !!!!!")
+        if(ingredient == "lait"):
+            if(quantity >= MILK_QUANTITY):
+                validQuantityMessage(ingredient, quantity)
+            else:
+                isValid=False
+                print(f"KO -- {MILK_QUANTITY} {LIQUID_UNIT} de lait requis - quantité actuelle {quantity} !!!!!")
+        if(ingredient == "farine"):
+            if(quantity >= FLOUR_QUANTITY):
+                validQuantityMessage(ingredient, quantity)
+            else:
+                isValid=False
+                print(f"KO -- {FLOUR_QUANTITY} {SOLID_UNIT} de farine requis - quantité actuelle {quantity} !!!!!")
+        f.close()
+    return isValid
+
+def writeRecipe():
+    stepNumber=1
+    recipe = open(RECIPE_FILE, "w")
+    print(f"{stepNumber} - Mettre les {FLOUR_QUANTITY} grammes de farnine dans le recipient.")
+    recipe.write(f"{stepNumber} - Mettre les {FLOUR_QUANTITY} grammes de farnine dans le recipient.\n")
+    stepNumber += 1
+    for i in range(0, EGG_QUANTITY):
+        print(f"{stepNumber} - Casser un oeuf et l'incorporer, oeuf n°{i+1} ")
+        recipe.write(f"{stepNumber} - Casser un oeuf et l'incorporer, oeuf n°{i+1}.\n")
+        stepNumber += 1
+    print(f"{stepNumber} - Verser les {SUGAR_QUANTITY} grammes de sucre.")
+    recipe.write(f"{stepNumber} - Verser les {SUGAR_QUANTITY} grammes de sucre.\n")
+    stepNumber += 1
+    print(f"{stepNumber} - Verser les {OIL_QUANTITY} cl d'huile.")
+    recipe.write(f"{stepNumber} - Verser les {OIL_QUANTITY} cl d'huile.\n")
+    stepNumber += 1
+    milk=MILK_QUANTITY
+    while(milk != 0):
+        print(f"{stepNumber} - Incorporer le lait et melanger en même temps, total {MILK_QUANTITY} - reste {milk} cl.")
+        recipe.write(f"{stepNumber} - Incorporer le lait, total {MILK_QUANTITY} - reste {milk} cl.\n")
+        milk -= 10
+        stepNumber += 1
+    print(f"{stepNumber} - Mélanger le tout.")
+    recipe.write(f"{stepNumber} - Mélanger le tout.\n")
+    stepNumber += 1
+    print(f"{stepNumber} - Faire chauffer la poele.")
+    recipe.write(f"{stepNumber} - Faire chauffer la poele.\n")
+    stepNumber += 1
+    temp_timer=20
+    while(temp_timer != TEMP):
+        print(f"{stepNumber} - Attente montée en température - actuelle {temp_timer}°C")
+        recipe.write(f"{stepNumber} - Attente montée en température - actuelle {temp_timer}°C.\n")
+        temp_timer += 10
+        stepNumber += 1
+    for i in range(0, NB_PEOPLE*3):
+        print(f"{stepNumber} - Faire cuire crepe n° {i+1}")
+        recipe.write(f"{stepNumber} - Faire cuire crepe n° {i+1}.\n")
+        stepNumber += 1
+    recipe.close()
+
+
+
+
+
+if(ingredientCheck(NB_PEOPLE)):
+    print("##################################### Creation de la recette #####################################")
+    writeRecipe()
+    print(f"Retrouvez votre recette dans {RECIPE_FILE}, bonne dégustation ;)")
+else:
+    print("################################## !!!!! Vérifiez votre liste d'ingrédients avant de continuer !!!!! ##################################")
+
+
+
+
+
+
+
+
+
+
+
