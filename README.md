@@ -4,14 +4,16 @@ Generateur automatique de recettes de crêpes
 Pour lancer le script
 ---------------------
 
-Ou "3" correspond au nombre de personnes
+Placez-vous dans le repertoire cloné puis :
 
 ```javascript
-python3 crepe-gen.py\  3
+#python3 crepe-gen.py\  3
 ```
 
-Ingrédients
------------
+Ou "3" correspond au nombre de personnes
 
-Changer les quantités dans les fichiers respectifs du répertoire ingrédients 
+Configuration des Ingrédients
+-----------------------------
+
+Changer les quantités dans les fichiers respectifs du répertoire ingrédients/ 
 
