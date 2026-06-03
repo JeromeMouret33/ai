@@ -1,8 +1,10 @@
 # Backend — dépendances (Phase 1+). À épingler au fur et à mesure.
 fastapi
 uvicorn[standard]
+python-multipart  # uploads multipart (jobs, assets)
 httpx          # appels OpenRouter (API compatible OpenAI)
 pyyaml         # lecture config (fragments + params)
+ruamel.yaml    # édition config round-trip (préserve les commentaires)
 python-dotenv  # chargement .env
 pydantic
 

@@ -82,8 +82,14 @@ def generate_image(
 # --------------------------------------------------------------------------- #
 # Encodage / requête
 # --------------------------------------------------------------------------- #
-def _image_block(path: str) -> dict[str, Any]:
-    return {"type": "image_url", "image_url": {"url": _data_uri(path)}}
+def _image_block(path_or_url: str) -> dict[str, Any]:
+    """Bloc image. Accepte une URL http(s) (transmise telle quelle) ou un chemin
+    local (encodé en data URI)."""
+    if path_or_url.startswith(("http://", "https://", "data:")):
+        url = path_or_url
+    else:
+        url = _data_uri(path_or_url)
+    return {"type": "image_url", "image_url": {"url": url}}
 
 
 def _data_uri(path: str) -> str:
