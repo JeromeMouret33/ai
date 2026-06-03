@@ -97,15 +97,24 @@ def process_folder(args: argparse.Namespace) -> dict[str, Any]:
             entry["candidates"].append(cand)
         results.append(entry)
 
+    # Nomenclature lue depuis la config (éditable dans l'app).
+    nomen = config["nomenclature"]
+    folder_tpl = nomen.get("dossier", naming.DEFAULT_FOLDER_TEMPLATE)
+    file_tpl = nomen.get("fichier", naming.DEFAULT_FILE_TEMPLATE)
+    always_indexed = set(nomen.get("toujours_numerotes", naming.ALWAYS_INDEXED))
+
     # Noms de livraison (ordre d'entrée) pour les photos correctement classées.
     classified = [e for e in results if e.get("angle")]
     angles = [e["angle"] for e in classified]
-    for entry, name in zip(classified, naming.assign_names(args.marque, args.modele, angles)):
+    target_names = naming.assign_names(
+        args.marque, args.modele, angles, file_template=file_tpl, always_indexed=always_indexed
+    )
+    for entry, name in zip(classified, target_names):
         entry["target_filename"] = name
 
     manifest = {
         "vehicle": {"marque": args.marque, "modele": args.modele, "infos": args.infos},
-        "drive_folder": naming.folder_name(args.marque, args.modele, args.infos),
+        "drive_folder": naming.folder_name(args.marque, args.modele, args.infos, template=folder_tpl),
         "photos": results,
     }
     (out_dir / "manifest.json").write_text(

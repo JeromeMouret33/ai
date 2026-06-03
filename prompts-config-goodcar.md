@@ -160,9 +160,9 @@ Les variables `{ANGLE}`, `{FRAMING_PRESET}`, `{LOGO_POSITION_SIZE}`, `{RATIO}`, 
 ```yaml
 parametres:
   models:
-    classification: "<modèle vision>"        # ex. un modèle vision via OpenRouter
+    classification: "openai/gpt-4o-mini"      # vision via OpenRouter
     generation: "google/gemini-3-pro-image-preview"
-    qc: "<modèle vision>"                      # peut différer de la classification
+    qc: "openai/gpt-4o-mini"                   # peut différer de la classification
   ratio: "3:2"            # format photo classique (configurable : 4:3, 16:9…)
   resolution: "1K"        # palier natif Nano Banana
   candidates_per_photo: 1   # configurable dans l'app
@@ -177,6 +177,7 @@ nomenclature:
            profil-droit, 3-4-arriere-gauche, 3-4-arriere-droit, arriere,
            interieur-01, detail-01]
   doublon_meme_angle: "suffixe -01, -02"
+  toujours_numerotes: [interieur, detail]   # numérotés même en un seul exemplaire
 
 options:
   relight_enabled: true   # qualité avec garde-fous (version A)

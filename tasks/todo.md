@@ -44,8 +44,10 @@
 - [x] Classification (`classify.py`) → angle + confiance ; nomenclature (`naming.py`) → nom de fichier + dossier véhicule.
 - [x] QC (`qc.py`) → verdict + raisons (relance laissée à l'UI) ; instructions classify/qc éditables dans la config.
 - [x] Orchestrateur CLI (`cli.py`) : boucle sur un dossier, isole les erreurs par photo, écrit `manifest.json` + résumé.
-- [x] Tests unitaires des parties pures (naming, prompt_builder, loader, parsing OpenRouter) — 18 tests verts.
-- [ ] **Test end-to-end sur ~30 photos** — bloqué : nécessite `OPENROUTER_API_KEY` + modèles `classification`/`qc` choisis.
+- [x] Tests unitaires des parties pures (naming, prompt_builder, loader, parsing OpenRouter) — 19 tests verts.
+- [x] Modèles choisis : classification + qc = `openai/gpt-4o-mini` (dans `params.yaml`, éditables dans l'app).
+- [x] Nomenclature pilotée par la config (templates `dossier`/`fichier` + `toujours_numerotes` lus par `naming.py`).
+- [ ] **Test end-to-end sur ~30 photos** — ne reste que `OPENROUTER_API_KEY` à fournir (en local dans `.env`).
 
 ## Phase 2 — Stockage, nommage, livraison
 - [ ] Supabase : buckets (`references`, `uploads`, `outputs`).
@@ -59,7 +61,7 @@
 - [ ] QC interactif : aperçu de la photo signalée + choix relancer / garder.
 - [ ] Galerie de validation : aperçus + cases à cocher → livrer la sélection sur le Drive.
 - [ ] Écran de config : upload + aperçu vignettes (showroom / logo / plaque) + sélection de l'actif ;
-      édition des fragments ; 3 modèles ; options ; paramètres ; répertoire Drive.
+      édition des fragments ; 3 modèles ; options ; paramètres ; **nomenclature (templates dossier/fichier)** ; répertoire Drive.
 - [ ] Historique : liste des générations (source Drive) + suppression app + dossier Drive.
 - [ ] Câblage front ↔ backend + déploiement (Vercel + Railway/Render).
 

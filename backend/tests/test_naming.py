@@ -17,6 +17,19 @@ def test_file_name_with_and_without_index():
     assert naming.file_name("Peugeot", "208", "profil-gauche", 2) == "peugeot-208_profil-gauche-02.jpg"
 
 
+def test_config_driven_templates():
+    # Template de fichier personnalisé + jeu d'angles toujours numérotés custom.
+    names = naming.assign_names(
+        "Renault", "Clio", ["face-avant", "vue-drone"],
+        file_template="{marque}_{modele}_{angle}.png",
+        always_indexed={"vue-drone"},
+    )
+    assert names == ["renault_clio_face-avant.png", "renault_clio_vue-drone-01.png"]
+    # Template de dossier personnalisé.
+    assert naming.folder_name("Renault", "Clio", "RS", template="{Modèle} {Marque} - {infos}") \
+        == "Clio Renault - RS"
+
+
 def test_assign_names_dedup_and_always_indexed():
     angles = ["face-avant", "profil-gauche", "profil-gauche", "interieur", "detail", "arriere"]
     names = naming.assign_names("Peugeot", "208", angles)

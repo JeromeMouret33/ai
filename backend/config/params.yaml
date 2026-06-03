@@ -4,9 +4,9 @@
 parametres:
   # Trois rôles IA, chacun avec son propre modèle (via OpenRouter).
   models:
-    classification: ""                               # TODO: modèle vision (détection d'angle)
+    classification: "openai/gpt-4o-mini"             # vision (détection d'angle)
     generation: "google/gemini-3-pro-image-preview"  # Nano Banana Pro (défaut)
-    qc: ""                                            # TODO: modèle vision (peut différer de la classif)
+    qc: "openai/gpt-4o-mini"                          # vision (contrôle qualité)
   ratio: "3:2"               # format photo classique (configurable : 4:3, 16:9…)
   resolution: "1K"           # palier natif Nano Banana
   candidates_per_photo: 1    # défaut verrouillé à 1 (configurable dans l'app)
@@ -14,13 +14,14 @@ parametres:
   logo_position_size: "back wall, upper-left; logo left edge ~7% from frame's left border; width ~17% of frame width; vertical center ~30% from top; subtle raised 3D relief; never overlapping the vehicle"
   drive_parent_folder: ""    # TODO: id ou chemin du dossier Drive parent
 
-nomenclature:
-  dossier: "{Marque} {Modèle} {infos}"
-  fichier: "{marque}-{modele}_{angle}.jpg"
+nomenclature:                  # éditable dans l'app — lue par pipeline/naming.py
+  dossier: "{Marque} {Modèle} {infos}"     # {Marque}/{Modèle}/{infos} = valeurs saisies (casse conservée)
+  fichier: "{marque}-{modele}_{angle}.jpg" # {marque}/{modele} = slugs ; {angle} = slug d'angle
   angles: [face-avant, 3-4-avant-gauche, 3-4-avant-droit, profil-gauche,
            profil-droit, 3-4-arriere-gauche, 3-4-arriere-droit, arriere,
            interieur-01, detail-01]
   doublon_meme_angle: "suffixe -01, -02"
+  toujours_numerotes: [interieur, detail]  # angles numérotés même en un seul exemplaire
 
 options:
   relight_enabled: true        # relighting version A (surfaces lisses + vitres lat./arrière)
