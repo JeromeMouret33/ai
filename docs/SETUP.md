@@ -36,6 +36,32 @@ Modèles utilisés (déjà dans `backend/config/params.yaml`, éditables dans l'
 
 ---
 
+## 2bis. Authentification (Supabase Auth — Google OAuth, invite-only)
+
+L'app est protégée : seuls les utilisateurs autorisés peuvent y accéder.
+
+### Côté Supabase
+1. **Authentication → Providers → Google** : activer, coller le `Client ID` / `Client secret`
+   d'identifiants OAuth Google (peuvent être les mêmes que pour Drive, ou dédiés).
+   Ajouter l'URL de callback indiquée par Supabase dans la console Google.
+2. **Authentication → Providers → Email** : désactiver les inscriptions publiques
+   (« Allow new users to sign up » = OFF) → mode **invite-only**.
+3. **Authentication → Users** : inviter manuellement les emails autorisés
+   (ou ils se connectent via Google s'ils sont dans la liste).
+4. **Settings → API → JWT Secret** : copier → `SUPABASE_JWT_SECRET` (backend).
+
+### Côté backend
+- `SUPABASE_JWT_SECRET` : active la vérification du token sur toutes les routes (sauf `/health`).
+  ⚠️ Si non défini, l'auth est **désactivée** (dev uniquement).
+- `AUTH_ALLOWED_EMAILS` (optionnel) : liste blanche d'emails, défense en profondeur.
+
+### Côté frontend (Vercel)
+- `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Settings → API → anon public)
+  pour l'écran de connexion `@supabase/supabase-js`. Le front envoie ensuite le JWT
+  dans l'en-tête `Authorization: Bearer <token>` à chaque appel API.
+
+---
+
 ## 3. Google Drive (nécessaire seulement pour la livraison + l'historique)
 
 ### 3.1 Projet & API

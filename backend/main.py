@@ -25,10 +25,13 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import (
+    APIRouter, BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from backend.auth import get_current_user
 from backend.config import editor
 from backend.config.loader import load_config
 
@@ -39,6 +42,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Routes protégées par l'authentification (toutes sauf /api/health).
+protected = APIRouter(dependencies=[Depends(get_current_user)])
 
 JOB_STORAGE = Path(os.environ.get("JOB_STORAGE_DIR", "outputs"))
 
@@ -63,12 +69,12 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/api/config")
+@protected.get("/api/config")
 def get_config() -> dict[str, Any]:
     return load_config()
 
 
-@app.put("/api/config")
+@protected.put("/api/config")
 def put_config(patch: ConfigPatch) -> dict[str, Any]:
     if patch.params:
         editor.update_params(patch.params)
@@ -80,13 +86,13 @@ def put_config(patch: ConfigPatch) -> dict[str, Any]:
 # --------------------------------------------------------------------------- #
 # Bibliothèque de références
 # --------------------------------------------------------------------------- #
-@app.get("/api/reference-assets")
+@protected.get("/api/reference-assets")
 def list_reference_assets(type: str | None = None) -> list[dict[str, Any]]:
     from backend.storage import supabase as sb
     return sb.list_reference_assets(type)
 
 
-@app.post("/api/reference-assets")
+@protected.post("/api/reference-assets")
 async def upload_reference_asset(
     type: str = Form(...), name: str = Form(...), file: UploadFile = File(...)
 ) -> dict[str, Any]:
@@ -101,7 +107,7 @@ async def upload_reference_asset(
     return sb.insert("reference_assets", {"type": type, "name": name, "url": url})
 
 
-@app.put("/api/reference-assets/{asset_id}/active")
+@protected.put("/api/reference-assets/{asset_id}/active")
 def activate_reference_asset(asset_id: str, type: str = Form(...)) -> dict[str, Any]:
     from backend.storage import supabase as sb
     return sb.set_active_asset(asset_id, type)
@@ -110,7 +116,7 @@ def activate_reference_asset(asset_id: str, type: str = Form(...)) -> dict[str, 
 # --------------------------------------------------------------------------- #
 # Jobs
 # --------------------------------------------------------------------------- #
-@app.post("/api/jobs")
+@protected.post("/api/jobs")
 async def create_job(
     background: BackgroundTasks,
     marque: str = Form(...),
@@ -146,7 +152,7 @@ async def create_job(
     return {"job_id": job_id, "drive_folder": folder, "photos": len(photos)}
 
 
-@app.get("/api/jobs/{job_id}")
+@protected.get("/api/jobs/{job_id}")
 def get_job(job_id: str) -> dict[str, Any]:
     from backend.storage import supabase as sb
     jobs = sb.select("jobs", {"id": job_id})
@@ -155,7 +161,7 @@ def get_job(job_id: str) -> dict[str, Any]:
     return {"job": jobs[0], "photos": sb.select("photos", {"job_id": job_id})}
 
 
-@app.post("/api/jobs/{job_id}/deliver")
+@protected.post("/api/jobs/{job_id}/deliver")
 def deliver_job(job_id: str, body: DeliverBody) -> dict[str, Any]:
     from backend.storage import delivery, supabase as sb
 
@@ -179,7 +185,7 @@ def deliver_job(job_id: str, body: DeliverBody) -> dict[str, Any]:
     return result
 
 
-@app.post("/api/photos/{photo_id}/retry")
+@protected.post("/api/photos/{photo_id}/retry")
 def retry(photo_id: str) -> dict[str, Any]:
     from backend.jobs import retry_photo
     return retry_photo(photo_id)
@@ -188,15 +194,19 @@ def retry(photo_id: str) -> dict[str, Any]:
 # --------------------------------------------------------------------------- #
 # Historique (source Drive)
 # --------------------------------------------------------------------------- #
-@app.get("/api/history")
+@protected.get("/api/history")
 def history() -> list[dict[str, Any]]:
     from backend.storage import drive
     return drive.list_history(drive.parent_folder_id(load_config()))
 
 
-@app.delete("/api/history/{folder_id}")
+@protected.delete("/api/history/{folder_id}")
 def delete_history(folder_id: str) -> dict[str, str]:
     from backend.storage import drive, supabase as sb
     drive.delete_folder(folder_id)
     sb.update("jobs", {"drive_folder_id": folder_id}, {"status": "error"})
     return {"deleted": folder_id}
+
+
+# Montage des routes protégées.
+app.include_router(protected)
