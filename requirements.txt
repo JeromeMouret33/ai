@@ -1,0 +1,2 @@
+# Déploiement backend (Railway/Render détectent Python via ce fichier à la racine).
+-r backend/requirements.txt

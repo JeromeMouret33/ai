@@ -60,6 +60,26 @@ L'app est protégée : seuls les utilisateurs autorisés peuvent y accéder.
   pour l'écran de connexion `@supabase/supabase-js`. Le front envoie ensuite le JWT
   dans l'en-tête `Authorization: Bearer <token>` à chaque appel API.
 
+### Sign in with Apple (Face ID / Touch ID sur iPhone)
+Sur les appareils Apple, « Se connecter avec Apple » authentifie via l'Apple ID
+(donc **Face ID / Touch ID**). À configurer en plus de Google :
+
+1. **Apple Developer** (compte payant ~99 $/an requis) :
+   - Crée un **App ID** puis un **Services ID** (c'est le « client_id » web).
+   - Active « Sign In with Apple », déclare le **domaine** et l'**URL de retour**
+     fournie par Supabase (`https://<projet>.supabase.co/auth/v1/callback`).
+   - Crée une **clé privée** Sign In with Apple (.p8) + note Key ID et Team ID ;
+     Supabase génère le `client_secret` à partir de ces éléments.
+2. **Supabase → Authentication → Providers → Apple** : activer, renseigner le
+   Services ID + le secret. Aucun changement backend (le JWT reste un JWT Supabase,
+   déjà vérifié par `backend/auth.py`).
+3. **Frontend** : ajouter le bouton « Apple » (même flux que Google via
+   `signInWithOAuth({ provider: 'apple' })`).
+
+> Note : Sign in with Apple impose l'inscription au Apple Developer Program. Si tu
+> ne l'as pas encore, Google OAuth suffit pour démarrer ; Apple s'ajoute ensuite
+> sans rien casser.
+
 ---
 
 ## 3. Google Drive (nécessaire seulement pour la livraison + l'historique)

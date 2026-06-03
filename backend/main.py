@@ -36,9 +36,14 @@ from backend.config import editor
 from backend.config.loader import load_config
 
 app = FastAPI(title="Showroom IA — GOODCAR")
+
+# CORS : "*" en dev ; en prod, définir ALLOWED_ORIGINS (URLs séparées par des virgules,
+# ex. l'URL Vercel du frontend).
+_origins_env = os.environ.get("ALLOWED_ORIGINS", "*").strip()
+_allow_origins = ["*"] if _origins_env == "*" else [o.strip() for o in _origins_env.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # dev : à restreindre en prod
+    allow_origins=_allow_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
