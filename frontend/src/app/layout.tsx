@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { BottomNav } from "@/components/BottomNav";
+import { AuthGate } from "@/components/AuthGate";
 import { ServiceWorker } from "@/components/ServiceWorker";
 
 export const metadata: Metadata = {
@@ -38,12 +38,9 @@ export default function RootLayout({
   return (
     <html lang="fr" className="h-full antialiased">
       <body className="min-h-full bg-background text-foreground">
-        {/* Conteneur façon téléphone : une colonne centrée, max-w-md sur desktop.
-            pb généreux pour ne jamais passer sous la bottom tab bar. */}
-        <main className="mx-auto w-full max-w-md px-4 pb-28 pt-6">
-          {children}
-        </main>
-        <BottomNav />
+        {/* AuthGate : écran de connexion (Google/Apple) si non authentifié,
+            sinon le shell (colonne centrée max-w-md + bottom tab bar). */}
+        <AuthGate>{children}</AuthGate>
         <ServiceWorker />
       </body>
     </html>

@@ -1,6 +1,8 @@
 // Client API typé centralisé — Showroom IA (GOODCAR).
 // Toutes les routes sont préfixées /api sur {API_BASE}.
 
+import { getAccessToken } from "./supabase";
+
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
 
@@ -173,6 +175,7 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
+  const token = await getAccessToken();
   try {
     res = await fetch(`${API_BASE}/api${path}`, {
       ...init,
@@ -180,6 +183,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         ...(init?.body && !(init.body instanceof FormData)
           ? { "Content-Type": "application/json" }
           : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(init?.headers ?? {}),
       },
     });
