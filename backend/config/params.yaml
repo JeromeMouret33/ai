@@ -9,7 +9,7 @@ parametres:
     qc: ""                                            # TODO: modèle vision (peut différer de la classif)
   ratio: "3:2"               # format photo classique (configurable : 4:3, 16:9…)
   resolution: "1K"           # palier natif Nano Banana
-  candidates_per_photo: 1    # défaut verrouillé à 1 (cf. doc §8 : "défaut 2" à trancher)
+  candidates_per_photo: 1    # défaut verrouillé à 1 (configurable dans l'app)
   max_retries: 2
   logo_position_size: "back wall, upper-left; logo left edge ~7% from frame's left border; width ~17% of frame width; vertical center ~30% from top; subtle raised 3D relief; never overlapping the vehicle"
   drive_parent_folder: ""    # TODO: id ou chemin du dossier Drive parent

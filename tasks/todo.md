@@ -86,5 +86,7 @@
 
 ## Décisions encore ouvertes (cf. `prompts-config-goodcar.md` §8)
 - Une seule plaque showroom, ou 2-3 selon l'angle (meilleur ancrage au sol).
-- Nb de candidats par photo : verrouillé à 1 ici, mais le pack mentionne « défaut 2 » → à trancher.
 - Hébergement backend : toujours actif (Railway/Render) vs serverless (jobs de plusieurs minutes).
+
+## Décisions tranchées récemment
+- Nb de candidats par photo = **1** par défaut (configurable dans l'app).

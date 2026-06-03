@@ -229,5 +229,6 @@ No car, no logo, no people, no text, no extra objects. High resolution, photorea
 ## 8. Décisions encore ouvertes
 
 - Une seule plaque showroom, ou 2-3 selon l’angle (meilleur ancrage au sol).
-- Nombre de candidats par photo (défaut 2).
 - Hébergement backend (traitement de plusieurs minutes par série → backend toujours actif vs serverless).
+
+> Nombre de candidats par photo : **tranché → défaut 1** (configurable dans l’app).

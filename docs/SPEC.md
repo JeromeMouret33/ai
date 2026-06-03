@@ -187,5 +187,4 @@ Phase 1 (config + cœur en CLI, là où est tout le risque) → Phase 2 (stockag
 ## Décisions encore ouvertes (cf. `prompts-config-goodcar.md` §8)
 
 - Une seule plaque showroom, ou 2-3 selon l’angle (meilleur ancrage au sol).
-- Nombre de candidats par photo : **défaut verrouillé à 1** ici, mais le pack de prompts mentionne « défaut 2 » → à trancher.
 - Hébergement backend (traitement de plusieurs minutes par série → backend toujours actif vs serverless).
