@@ -7,3 +7,6 @@ python-dotenv  # chargement .env
 pydantic
 # supabase     # Phase 2
 # google-api-python-client, google-auth  # Phase 2 (Drive)
+
+# Dev / tests
+pytest

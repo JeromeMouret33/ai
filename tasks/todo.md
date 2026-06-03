@@ -38,13 +38,14 @@
 - [x] Logique d'assemblage documentée dans `pipeline/prompt_builder.py`.
 
 ## Phase 1 — Config + cœur génératif (CLI, sans interface)
-- [ ] Schéma de config : fragments de prompt + paramètres + 3 modèles + toggles + répertoire Drive.
-- [ ] Assembleur de prompt (`prompt_builder.py`) : concatène les fragments selon angle + options.
-- [ ] Intégration OpenRouter : `generate()` (image), `classify()` (vision), `qc()` (vision) — chacun lit son modèle dans la config.
-- [ ] Classification → angle + confiance + nom de fichier (nomenclature) + nom du dossier véhicule.
-- [ ] QC → verdict + raisons (décision de relance laissée à l'UI), avec vérif zoomée des zones sensibles.
-- [ ] Orchestrateur CLI : boucle sur un dossier de photos.
-- [ ] Test end-to-end sur ~30 photos.
+- [x] Schéma de config + chargeur (`config/loader.py`) : fragments + paramètres + 3 modèles + toggles + Drive.
+- [x] Assembleur de prompt (`prompt_builder.py`) : concatène les fragments selon angle + options (logique §3) + substitution des variables.
+- [x] Intégration OpenRouter (`pipeline/openrouter.py`) : `vision_json()` (classify/qc) + `generate_image()` — 1 clé, modèle par appel.
+- [x] Classification (`classify.py`) → angle + confiance ; nomenclature (`naming.py`) → nom de fichier + dossier véhicule.
+- [x] QC (`qc.py`) → verdict + raisons (relance laissée à l'UI) ; instructions classify/qc éditables dans la config.
+- [x] Orchestrateur CLI (`cli.py`) : boucle sur un dossier, isole les erreurs par photo, écrit `manifest.json` + résumé.
+- [x] Tests unitaires des parties pures (naming, prompt_builder, loader, parsing OpenRouter) — 18 tests verts.
+- [ ] **Test end-to-end sur ~30 photos** — bloqué : nécessite `OPENROUTER_API_KEY` + modèles `classification`/`qc` choisis.
 
 ## Phase 2 — Stockage, nommage, livraison
 - [ ] Supabase : buckets (`references`, `uploads`, `outputs`).

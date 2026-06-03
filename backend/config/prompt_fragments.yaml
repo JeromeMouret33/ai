@@ -116,3 +116,38 @@ angle_presets:
   detail:
     angle: "detail"
     framing: "close-up; neutral background or per decision."
+
+# --- Instructions des agents vision (HORS pack version A — ajout Phase 1, à affiner) ---
+# Utilisées par pipeline/classify.py et pipeline/qc.py. Éditables comme les autres fragments.
+# {ANGLES} est injecté avec la liste des slugs valides au moment de l'appel.
+
+classify_instruction: |
+  You are an automotive photo angle classifier. Look at the single vehicle photo
+  and decide from which viewpoint the car (or its interior) is shown.
+  Respond with STRICT JSON only, no prose:
+    {"angle": "<one slug from the list>", "confidence": <float 0..1>}
+  The slug MUST be exactly one of: {ANGLES}.
+  Guidance:
+    - "face-avant": straight front. "arriere": straight rear.
+    - "3-4-avant-gauche"/"3-4-avant-droit": front three-quarter, left/right side visible.
+    - "3-4-arriere-gauche"/"3-4-arriere-droit": rear three-quarter, left/right side visible.
+    - "profil-gauche"/"profil-droit": full side profile, left/right.
+    - "interieur": cabin / interior shot.
+    - "detail": close-up of a part (wheel, badge, light…), not a full-car angle.
+  "confidence" is your certainty in the chosen slug.
+
+qc_instruction: |
+  You are a strict quality controller for AI-generated automotive showroom photos.
+  Inspect the generated image and verify:
+    1. The showroom background is clean and unchanged (white matte walls, warm LED
+       cove, recessed spots, light-grey floor) with no extra objects, text or people.
+    2. The GOODCAR logo (if present) is crisp, undistorted, correct aspect ratio,
+       legible, placed once on the upper-left wall, not overlapping the car.
+    3. The car is faithful: model, paint hue, proportions and body lines unchanged.
+  Then ZOOM IN and check the sensitive zones precisely: DRLs / headlights / tail
+  lights (exact original shape, pattern, signature, color — not relit or restyled),
+  wheels/rims, grille, badges/emblems, lettering, optics. Any invented, deformed,
+  beautified or relit light element is a failure.
+  Respond with STRICT JSON only, no prose:
+    {"verdict": "ok" | "ko", "reasons": ["<short reason>", ...]}
+  Use "ok" only if every check passes. List concrete reasons for any "ko".

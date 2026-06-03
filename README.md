@@ -32,11 +32,25 @@ assets/                # showroom, logo, plaque
 ```
 
 ## État
-Scaffolding posé (Phase 0). Suite du plan détaillé dans [`tasks/todo.md`](tasks/todo.md).
+Phase 1 (cœur génératif CLI) implémentée — voir [`tasks/todo.md`](tasks/todo.md).
+Reste le test end-to-end (nécessite la clé OpenRouter + les modèles classification/QC).
 
-## Démarrage (à venir, Phase 1)
+## Démarrage (Phase 1 — CLI)
 ```bash
 cp .env.example .env        # renseigner OPENROUTER_API_KEY
 pip install -r backend/requirements.txt
-# orchestrateur CLI : à implémenter en Phase 1
+
+# Renseigner les modèles classification/qc dans backend/config/params.yaml,
+# puis lancer l'orchestrateur depuis la racine du repo :
+python -m backend.cli ./photos \
+    --marque Peugeot --modele "208 GT-Line" \
+    --showroom assets/showroom.png --logo assets/logo.png --plate assets/plate.png
+
+# Variantes utiles :
+python -m backend.cli ./photos --marque Peugeot --modele 208 --classify-only  # classer sans générer
+python -m backend.cli ./photos --marque Peugeot --modele 208 --no-qc          # générer sans QC
+
+# Tests (parties pures, sans réseau) :
+python -m pytest backend/tests -q
 ```
+Sorties : `outputs/<vehicule>/candidates/*.png` + `outputs/<vehicule>/manifest.json`.
