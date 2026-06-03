@@ -98,11 +98,17 @@ def _headers() -> dict[str, str]:
     if not key:
         raise OpenRouterError("OPENROUTER_API_KEY manquante dans l'environnement.")
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-    # Attribution facultative (recommandée par OpenRouter).
+    # Attribution facultative (recommandée par OpenRouter). Les valeurs d'en-tête
+    # HTTP doivent être ASCII : on assainit (ex. tiret cadratin "—" interdit).
     if os.environ.get("OPENROUTER_REFERER"):
-        headers["HTTP-Referer"] = os.environ["OPENROUTER_REFERER"]
-    headers["X-Title"] = os.environ.get("OPENROUTER_TITLE", "Showroom IA — GOODCAR")
+        headers["HTTP-Referer"] = _ascii_header(os.environ["OPENROUTER_REFERER"])
+    headers["X-Title"] = _ascii_header(os.environ.get("OPENROUTER_TITLE", "Showroom IA - GOODCAR"))
     return headers
+
+
+def _ascii_header(value: str) -> str:
+    """Rend une valeur d'en-tête sûre (ASCII), pour éviter les erreurs d'encodage."""
+    return value.encode("ascii", "ignore").decode("ascii")
 
 
 def _post(payload: dict[str, Any], timeout: float) -> dict[str, Any]:

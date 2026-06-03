@@ -47,7 +47,10 @@
 - [x] Tests unitaires des parties pures (naming, prompt_builder, loader, parsing OpenRouter) — 19 tests verts.
 - [x] Modèles choisis : classification + qc = `openai/gpt-4o-mini` (dans `params.yaml`, éditables dans l'app).
 - [x] Nomenclature pilotée par la config (templates `dossier`/`fichier` + `toujours_numerotes` lus par `naming.py`).
-- [ ] **Test end-to-end sur ~30 photos** — ne reste que `OPENROUTER_API_KEY` à fournir (en local dans `.env`).
+- [ ] **Test end-to-end sur ~30 photos** — BLOQUÉ dans l'env web : politique réseau interdit `openrouter.ai`
+      (403 "Host not in allowlist"). À lancer en local OU dans un env dont l'allowlist autorise openrouter.ai.
+      Nécessite aussi de vraies photos + assets (showroom/logo/plaque), pas encore fournis.
+- [x] Bug corrigé : en-têtes HTTP assainis en ASCII (`_ascii_header`) — voir lessons.md.
 
 ## Phase 2 — Stockage, nommage, livraison
 - [ ] Supabase : buckets (`references`, `uploads`, `outputs`).
