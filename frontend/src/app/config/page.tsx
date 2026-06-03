@@ -114,8 +114,8 @@ export default function ConfigPage() {
     }
   }, [hydrate]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 
@@ -382,8 +382,8 @@ function ReferenceLibrary() {
     }
   }, []);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

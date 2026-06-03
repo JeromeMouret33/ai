@@ -26,10 +26,9 @@ export default function GalleryPage() {
   const [deliverError, setDeliverError] = useState<unknown>(null);
   const [result, setResult] = useState<DeliverResult | null>(null);
 
-  const photos = data?.photos ?? [];
+  const photos = useMemo(() => data?.photos ?? [], [data]);
   const selectedSources = useMemo(
-    () =>
-      photos.filter((p) => selected[p.id]).map((p) => p.source_name),
+    () => photos.filter((p) => selected[p.id]).map((p) => p.source_name),
     [photos, selected],
   );
 

@@ -64,13 +64,15 @@
 - [ ] **Vérif live (Supabase + Drive)** — bloquée réseau (env web) ; à faire en local/env ouvert avec `SUPABASE_*` + `GOOGLE_*`.
 
 ## Phase 3 — Interface web (génération, validation, config, historique)
-- [ ] Front : drag-drop photos + champs (nom véhicule, marque/modèle/infos) + lancer + progression par photo.
-- [ ] QC interactif : aperçu de la photo signalée + choix relancer / garder.
-- [ ] Galerie de validation : aperçus + cases à cocher → livrer la sélection sur le Drive.
-- [ ] Écran de config : upload + aperçu vignettes (showroom / logo / plaque) + sélection de l'actif ;
-      édition des fragments ; 3 modèles ; options ; paramètres ; **nomenclature (templates dossier/fichier)** ; répertoire Drive.
-- [ ] Historique : liste des générations (source Drive) + suppression app + dossier Drive.
-- [ ] Câblage front ↔ backend + déploiement (Vercel + Railway/Render).
+- [x] Scaffolding Next.js 16 (App Router, TS strict, Tailwind v4) + client API typé `frontend/src/lib/api.ts`.
+- [x] Layout + barre de navigation entre les 5 écrans.
+- [x] Front : drag-drop photos + champs (marque/modèle/infos) + lancer + progression par photo (polling 3s).
+- [x] QC interactif : aperçu de la photo signalée (verdict ko) + choix relancer / garder.
+- [x] Galerie de validation : aperçus + cases à cocher → livrer la sélection sur le Drive.
+- [x] Écran de config : fragments, 3 modèles, options, paramètres, nomenclature + bibliothèque de références.
+- [x] Historique : liste Drive + suppression.
+- [x] `npm run build` vert + ESLint propre.
+- [ ] Câblage front ↔ backend live + déploiement (Vercel + Railway/Render).
 
 ## Phase 4 — Robustesse & finitions
 - [ ] Relance ciblée d'une photo, ajustements.
