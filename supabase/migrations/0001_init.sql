@@ -55,6 +55,16 @@ create unique index if not exists reference_assets_one_active_per_type
     on public.reference_assets(type) where active;
 
 -- =========================================================================
+-- Sécurité : Row Level Security
+-- =========================================================================
+-- On ACTIVE RLS sans créer de policy pour anon/authenticated : l'accès direct
+-- via l'API publique (PostgREST + clé anon) est donc REFUSÉ. Le backend utilise
+-- la clé `service_role` qui contourne RLS — c'est le seul chemin d'accès.
+alter table public.jobs enable row level security;
+alter table public.photos enable row level security;
+alter table public.reference_assets enable row level security;
+
+-- =========================================================================
 -- Buckets de stockage (créés via l'API Storage ; rappel ici pour référence)
 -- =========================================================================
 --   references : assets de marque (showroom, logo, plaque)

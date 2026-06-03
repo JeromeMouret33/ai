@@ -60,7 +60,7 @@ def process_job(job_id: str, photos: list[dict[str, str]]) -> None:
             images = generate_mod.generate(built, references, config)
 
             # 1er candidat (candidates_per_photo défaut = 1) -> bucket outputs.
-            obj_path = f"{job_id}/{photo['source']}_cand01.png"
+            obj_path = f"{job_id}/{naming.safe_filename(photo['source'])}_cand01.png"
             sb.upload(sb.BUCKET_OUTPUTS, obj_path, images[0], content_type="image/png")
             url = sb.public_url(sb.BUCKET_OUTPUTS, obj_path)
 

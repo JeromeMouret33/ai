@@ -12,6 +12,7 @@ est la config, threadée depuis l'orchestrateur.
 
 from __future__ import annotations
 
+import os
 import re
 import unicodedata
 from collections import Counter
@@ -19,6 +20,18 @@ from collections import Counter
 DEFAULT_FOLDER_TEMPLATE = "{Marque} {Modèle} {infos}"
 DEFAULT_FILE_TEMPLATE = "{marque}-{modele}_{angle}.jpg"
 ALWAYS_INDEXED = {"interieur", "detail"}
+
+
+def safe_filename(name: str) -> str:
+    """Nom de fichier sûr (anti path-traversal) pour disque et clés de bucket.
+
+    Retire tout composant de chemin et ne garde que [A-Za-z0-9._-]. Utilisé sur
+    tout nom fourni par le client (uploads) avant écriture/stockage.
+    """
+    name = os.path.basename(name or "").replace("\\", "_")
+    name = re.sub(r"[^A-Za-z0-9._-]", "_", name)
+    name = name.lstrip(".")  # pas de fichier caché ni de "../"
+    return name[:200] or "file"
 
 
 def slugify(value: str) -> str:

@@ -82,7 +82,10 @@ def get_current_user(request: Request) -> dict[str, Any]:
     """Dependency FastAPI : renvoie l'utilisateur courant ou lève 401/403."""
     secret = os.environ.get("SUPABASE_JWT_SECRET")
     if not secret:
-        # Auth désactivée (dev/test). À NE PAS laisser en production.
+        # Échec SÛR : en production, on refuse plutôt que d'ouvrir l'app.
+        if os.environ.get("ENVIRONMENT", "").lower() == "production":
+            raise AuthError(503, "Authentification non configurée (SUPABASE_JWT_SECRET manquant).")
+        # Hors production : auth désactivée (dev/test).
         return {"sub": "dev", "email": "dev@local", "auth_disabled": True}
 
     header = request.headers.get("Authorization", "")

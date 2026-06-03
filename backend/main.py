@@ -52,6 +52,19 @@ app.add_middleware(
 protected = APIRouter(dependencies=[Depends(get_current_user)])
 
 JOB_STORAGE = Path(os.environ.get("JOB_STORAGE_DIR", "outputs"))
+MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))  # 25 Mo/fichier
+
+
+def _require_image(file: UploadFile) -> None:
+    """Refuse tout fichier dont le type déclaré n'est pas une image."""
+    if not (file.content_type or "").lower().startswith("image/"):
+        raise HTTPException(400, f"Type de fichier non autorisé : {file.content_type}")
+
+
+def _read_capped(data: bytes) -> bytes:
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "Fichier trop volumineux.")
+    return data
 
 
 # --------------------------------------------------------------------------- #
@@ -103,10 +116,12 @@ async def upload_reference_asset(
 ) -> dict[str, Any]:
     if type not in ("showroom", "logo", "plate"):
         raise HTTPException(400, "type invalide (showroom/logo/plate)")
+    _require_image(file)
+    from backend.pipeline import naming
     from backend.storage import supabase as sb
 
-    data = await file.read()
-    path = f"{type}/{uuid.uuid4().hex}-{file.filename}"
+    data = _read_capped(await file.read())
+    path = f"{type}/{uuid.uuid4().hex}-{naming.safe_filename(file.filename or 'asset')}"
     sb.upload(sb.BUCKET_REFERENCES, path, data, content_type=file.content_type or "image/png")
     url = sb.public_url(sb.BUCKET_REFERENCES, path)
     return sb.insert("reference_assets", {"type": type, "name": name, "url": url})
@@ -146,11 +161,13 @@ async def create_job(
 
     photos: list[dict[str, str]] = []
     for f in files:
-        local = job_dir / f.filename
-        local.write_bytes(await f.read())
-        photo = sb.insert("photos", {"job_id": job_id, "source_name": f.filename,
+        _require_image(f)
+        source = naming.safe_filename(f.filename or "photo")
+        local = job_dir / source
+        local.write_bytes(_read_capped(await f.read()))
+        photo = sb.insert("photos", {"job_id": job_id, "source_name": source,
                                       "status": "pending"})
-        photos.append({"photo_id": photo["id"], "source": f.filename, "path": str(local)})
+        photos.append({"photo_id": photo["id"], "source": source, "path": str(local)})
 
     from backend.jobs import process_job
     background.add_task(process_job, job_id, photos)
