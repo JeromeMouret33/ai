@@ -72,7 +72,14 @@
 - [x] Écran de config : fragments, 3 modèles, options, paramètres, nomenclature + bibliothèque de références.
 - [x] Historique : liste Drive + suppression.
 - [x] `npm run build` vert + ESLint propre.
-- [ ] Câblage front ↔ backend live + déploiement (Vercel + Railway/Render).
+- [x] Refonte mobile-first sombre premium + PWA installable (bottom tab bar, caméra, manifest + SW).
+- [x] Authentification Supabase (Google + Apple, invite-only) : garde JWT backend + écran de login front + Bearer sur les appels.
+- [x] Prêt déploiement : Procfile/runtime, CORS configurable, docs SETUP (services + Apple).
+- [ ] Câblage front ↔ backend **live** + déploiement effectif (Vercel + Railway) — à faire par l'utilisateur avec les vraies clés.
+
+## Sécurité — audit fait (docs/SECURITY-AUDIT.md)
+- [x] RLS activé (tables Supabase), path traversal corrigé, auth fail-closed en prod, validation des uploads (type + taille).
+- [ ] Reco prod : bucket `outputs` privé + URLs signées, CSP, rate limiting/coûts (Phase 4).
 
 ## Phase 4 — Robustesse & finitions
 - [ ] Relance ciblée d'une photo, ajustements.
