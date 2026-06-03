@@ -31,9 +31,12 @@ assets/                # showroom, logo, plaque
 .env.example           # OPENROUTER / SUPABASE / GOOGLE
 ```
 
+## Setup des services (OpenRouter / Supabase / Drive / hébergement)
+Guide pas-à-pas : [`docs/SETUP.md`](docs/SETUP.md).
+
 ## État
-Phase 1 (cœur génératif CLI) implémentée — voir [`tasks/todo.md`](tasks/todo.md).
-Reste le test end-to-end (nécessite la clé OpenRouter + les modèles classification/QC).
+Phases 1–2 implémentées + API backend (Phase 3). Frontend Next.js en cours.
+Détail et avancement dans [`tasks/todo.md`](tasks/todo.md).
 
 ## Démarrage (Phase 1 — CLI)
 ```bash
