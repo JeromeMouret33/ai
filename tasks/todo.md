@@ -29,10 +29,13 @@
 
 ---
 
-## Phase 0 — Scaffolding ✅ (en cours)
-- [x] Plan consigné dans `tasks/todo.md`.
+## Phase 0 — Scaffolding ✅
+- [x] Plan consigné dans `tasks/todo.md` + spec verbatim dans `docs/SPEC.md`.
 - [x] Arborescence de repo (backend / frontend / assets) + stubs documentés.
 - [x] `.env.example`, `requirements.txt`, `.gitignore`, README projet.
+- [x] Pack de prompts validé (version A) gravé : `prompts-config-goodcar.md`.
+- [x] `prompt_fragments.yaml` + `params.yaml` remplis avec le contenu réel (fragments, presets d'angle, params).
+- [x] Logique d'assemblage documentée dans `pipeline/prompt_builder.py`.
 
 ## Phase 1 — Config + cœur génératif (CLI, sans interface)
 - [ ] Schéma de config : fragments de prompt + paramètres + 3 modèles + toggles + répertoire Drive.
@@ -76,7 +79,12 @@
 
 ## Prérequis externes (à fournir)
 - `OPENROUTER_API_KEY`.
+- Modèles OpenRouter pour `classification` et `qc` (le modèle `generation` est fixé : Nano Banana Pro).
 - Identifiants Supabase (`SUPABASE_URL`, `SUPABASE_KEY`).
 - Identifiants Google Drive (`GOOGLE_*`) + ID du répertoire parent.
 - Assets : plaque showroom de référence, logo GOODCAR HD, image plaque d'immatriculation.
-- `prompts-config-goodcar.md` (fragments validés version A).
+
+## Décisions encore ouvertes (cf. `prompts-config-goodcar.md` §8)
+- Une seule plaque showroom, ou 2-3 selon l'angle (meilleur ancrage au sol).
+- Nb de candidats par photo : verrouillé à 1 ici, mais le pack mentionne « défaut 2 » → à trancher.
+- Hébergement backend : toujours actif (Railway/Render) vs serverless (jobs de plusieurs minutes).

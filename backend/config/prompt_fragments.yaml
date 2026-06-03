@@ -1,48 +1,118 @@
 # Fragments de prompt modulaires — éditables dans l'app.
-# L'assembleur (pipeline/prompt_builder.py) concatène uniquement les fragments
-# pertinents selon l'angle détecté (extérieur / intérieur) et les options actives.
-#
-# STUB : textes placeholder. Remplacer par les fragments validés (version A)
-# de prompts-config-goodcar.md.
+# Doc humain canonique : ../../prompts-config-goodcar.md (§2). Garder les deux synchro.
+# L'assembleur (pipeline/prompt_builder.py) concatène les fragments selon l'angle
+# (extérieur / intérieur) et les options actives — logique en §3 du doc.
+# Variables injectées au moment de l'assemblage :
+#   {ANGLE}, {FRAMING_PRESET}, {LOGO_POSITION_SIZE}, {RATIO}, {RESOLUTION}.
 
 role: |
-  # TODO: rôle de l'IA (ex. "Tu es un moteur de rendu de showroom automobile...").
+  Professional automotive studio compositor.
 
 vehicle_lock: |
-  # TODO: clauses de fidélité au véhicule (modèle, couleur, détails inchangés).
+  The car in the vehicle image is a fixed asset. Copy it faithfully; do not change
+  its model, trim, proportions, outline, body lines, panel gaps or paint hue. The
+  following fine-detail components are a LOCKED cutout, copied exactly from the
+  source and never redrawn, added to or removed: headlights, tail lights,
+  wheels/rims, grille, badges, emblems, lettering, mirrors, door handles.
+  LIGHT-EMITTING ELEMENTS ARE STRICTLY LOCKED: daytime running lights (DRLs),
+  headlight internals and lenses, indicators and tail lights keep their EXACT
+  original shape, internal pattern, light signature, color and glow — never
+  re-rendered, relit, brightened, recolored or restyled; their lenses are NOT to be
+  treated as "glass". Do NOT beautify, modernize, sharpen or "clean up" the car. If
+  a detail is unclear, keep it as-is — never invent or complete it.
 
-references: |
-  # TODO: description du rôle de chaque référence (showroom / logo / véhicule / plaque).
+ref_showroom: |
+  SHOWROOM image (empty, clean wall, NO logo). Reproduce it EXACTLY: same white
+  matte walls and corner, same warm LED cove strip, same recessed ceiling spots,
+  same light-grey lightly textured floor with subtle reflection. Do NOT recolor,
+  redesign, relight, or move anything in the environment.
+
+ref_logo: |
+  LOGO image (GOODCAR). Place it on the upper-left wall as a subtle raised 3D relief
+  at {LOGO_POSITION_SIZE}. Reproduce it EXACTLY: same shapes, wordmark, tagline and
+  colors, correct aspect ratio. Do NOT stretch, distort, recolor, crop, duplicate
+  or restyle it. Render its text crisp and legible. Maximum logo fidelity.
+
+ref_vehicle: |
+  VEHICLE image — the exact car to feature (see the locked-asset rule above).
+
+ref_plate: |
+  PLATE image — the GOODCAR license plate to apply to the vehicle.
 
 task_base: |
-  # TODO: tâche de base (intégrer le véhicule dans le showroom de référence).
+  Place the vehicle from the vehicle image into the showroom from the showroom
+  image as if professionally photographed there, shown at: {ANGLE}. Ground it
+  realistically — wheels firmly on the floor, with a soft contact shadow under the
+  car and a subtle reflection of the car on the showroom floor, matching the
+  showroom's soft, slightly warm light. Place the GOODCAR logo on the wall as
+  specified.
 
 relight: |
-  # TODO: relighting version A — surfaces lisses + vitres latérales/arrière uniquement ;
-  # éléments lumineux (DRL, phares, feux) et détails fins (jantes, calandre, badges) verrouillés.
+  You MAY add subtle, photoreal showroom relighting and reflections, but ONLY on
+  the large smooth painted body panels (doors, hood, roof, fenders, bumpers) and
+  the side/rear window glass. These must read as reflections/highlights laid OVER
+  the existing surface — never a redrawing of any shape, and never a change of the
+  actual paint hue.
+  ALLOWED on the car: relight + reflections on smooth panels and side/rear glass.
+  FORBIDDEN: relighting or re-rendering any light-emitting element (DRLs, headlights,
+  indicators, tail lights) or treating their lenses as glass; touching wheels,
+  grille, badges, lettering or any fine detail.
 
 plate: |
-  # TODO: gestion de la plaque d'immatriculation (option).
+  Replace the vehicle's visible license plate(s) with the plate from the plate
+  image, fitted neatly into the existing plate area with correct perspective,
+  undistorted. Reproduce the plate exactly as in the plate image.
 
 composition: |
-  # TODO: cadrage / composition (placeholder, surchargé par le preset d'angle).
+  COMPOSITION ({ANGLE}): {FRAMING_PRESET}
 
 constraints: |
-  # TODO: contraintes strictes (décor inchangé, format de sortie constant, etc.).
+  STRICT CONSTRAINTS:
+  - Output {RATIO}, {RESOLUTION}, photoreal, clean, no artifacts.
+  - Keep the showroom 100% identical to the showroom image on every generation.
+  - The car's identity is locked (model, paint hue, wheels, lights, grille, badges,
+    body lines, proportions). Do NOT hallucinate, invent, complete or "improve" any
+    part of the car.
+  - The logo must match the logo image exactly: undistorted, correct aspect ratio,
+    legible text, placed once on the upper-left wall.
+  - No added text, watermarks, people, or extra objects.
 
 interior: |
-  # TODO: fragment spécifique aux prises de vue intérieures
-  # (option blanchiment des vitres, etc.).
+  INTERIOR: Keep the cabin from the vehicle image exactly as-is; do not place it in
+  a showroom, do not add the logo, do not relight. Only replace what is visible
+  through the windows with clean, evenly blown-out white. Preserve all interior
+  details, materials and colors. Do NOT redraw or restyle any part of the interior.
 
-# Presets de cadrage par angle (slug -> directive de composition).
+# Presets de cadrage par angle (doc §6). slug -> { angle: {ANGLE}, framing: {FRAMING_PRESET} }.
+# La classification renvoie un slug ; l'assembleur injecte angle + framing dans `composition`.
 angle_presets:
-  face-avant: ""            # TODO
-  3-4-avant-gauche: ""      # TODO
-  3-4-avant-droit: ""       # TODO
-  profil-gauche: ""         # TODO
-  profil-droit: ""          # TODO
-  3-4-arriere-gauche: ""    # TODO
-  3-4-arriere-droit: ""     # TODO
-  arriere: ""               # TODO
-  interieur: ""             # TODO
-  detail: ""                # TODO
+  face-avant:
+    angle: "front"
+    framing: "straight front, centered, slightly low camera."
+  3-4-avant-gauche:
+    angle: "front 3/4 left"
+    framing: "angled, front-left visible, slightly low camera, car ~70% of frame width, centered."
+  3-4-avant-droit:
+    angle: "front 3/4 right"
+    framing: "mirror of front 3/4 left: angled, front-right visible, slightly low camera, car ~70% of frame width, centered."
+  profil-gauche:
+    angle: "profile left"
+    framing: "full side, eye-level, ~80% frame width."
+  profil-droit:
+    angle: "profile right"
+    framing: "full side, eye-level, ~80% frame width."
+  3-4-arriere-gauche:
+    angle: "rear 3/4 left"
+    framing: "rear visible, same logic (angled, slightly low camera, car ~70% of frame width, centered)."
+  3-4-arriere-droit:
+    angle: "rear 3/4 right"
+    framing: "rear visible, same logic (angled, slightly low camera, car ~70% of frame width, centered)."
+  arriere:
+    angle: "rear"
+    framing: "straight rear, centered, slightly low camera."
+  interieur:
+    angle: "interior"
+    framing: ""   # variante `interior`, pas de showroom
+  detail:
+    angle: "detail"
+    framing: "close-up; neutral background or per decision."

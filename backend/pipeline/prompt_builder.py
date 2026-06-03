@@ -5,6 +5,21 @@ l'angle détecté (extérieur / intérieur) et des options actives (relight,
 plaque, blanchiment vitres). Le preset de cadrage de l'angle surcharge la
 section composition.
 
+Logique d'assemblage de référence (prompts-config-goodcar.md §3) :
+
+    if angle == "interior":
+        prompt = role + vehicle_lock + ref_vehicle + interior + constraints
+    else:
+        refs = ref_showroom + ref_logo + ref_vehicle
+        if plate_enabled: refs += ref_plate
+        body = task_base
+        if relight_enabled: body += relight
+        if plate_enabled:   body += plate
+        prompt = role + vehicle_lock + refs + body + composition + constraints
+
+Variables injectées depuis params.yaml au moment de l'assemblage :
+    {ANGLE}, {FRAMING_PRESET}, {LOGO_POSITION_SIZE}, {RATIO}, {RESOLUTION}.
+
 STUB Phase 1.
 """
 

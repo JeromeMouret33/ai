@@ -1,32 +1,33 @@
-# Paramètres globaux — éditables dans l'app.
-# STUB : valeurs par défaut indicatives.
+# Paramètres globaux & options — éditables dans l'app.
+# Doc humain canonique : ../../prompts-config-goodcar.md (§4). Garder les deux synchro.
 
-# Trois rôles IA, chacun avec son propre modèle (via OpenRouter).
-models:
-  classification: ""                               # TODO: modèle vision (détection d'angle)
-  generation: "google/gemini-3-pro-image-preview"  # Nano Banana Pro (défaut)
-  qc: ""                                            # TODO: modèle vision (contrôle qualité)
+parametres:
+  # Trois rôles IA, chacun avec son propre modèle (via OpenRouter).
+  models:
+    classification: ""                               # TODO: modèle vision (détection d'angle)
+    generation: "google/gemini-3-pro-image-preview"  # Nano Banana Pro (défaut)
+    qc: ""                                            # TODO: modèle vision (peut différer de la classif)
+  ratio: "3:2"               # format photo classique (configurable : 4:3, 16:9…)
+  resolution: "1K"           # palier natif Nano Banana
+  candidates_per_photo: 1    # défaut verrouillé à 1 (cf. doc §8 : "défaut 2" à trancher)
+  max_retries: 2
+  logo_position_size: "back wall, upper-left; logo left edge ~7% from frame's left border; width ~17% of frame width; vertical center ~30% from top; subtle raised 3D relief; never overlapping the vehicle"
+  drive_parent_folder: ""    # TODO: id ou chemin du dossier Drive parent
 
-# Sortie image.
-image:
-  ratio: "3:2"        # format photo classique (configurable)
-  resolution: "1K"    # ~1080p (configurable)
-  candidates: 1       # nb de candidats par photo (défaut 1)
+nomenclature:
+  dossier: "{Marque} {Modèle} {infos}"
+  fichier: "{marque}-{modele}_{angle}.jpg"
+  angles: [face-avant, 3-4-avant-gauche, 3-4-avant-droit, profil-gauche,
+           profil-droit, 3-4-arriere-gauche, 3-4-arriere-droit, arriere,
+           interieur-01, detail-01]
+  doublon_meme_angle: "suffixe -01, -02"
 
-# Boucle de traitement.
-retries_max: 2        # relances max (décision laissée à l'utilisateur côté UI)
+options:
+  relight_enabled: true        # relighting version A (surfaces lisses + vitres lat./arrière)
+  plate_enabled: true          # remplacer la plaque par la PLATE image
+  interior_window_whiten: true # blanchiment des vitres en intérieur
 
-# Logo (poussé en référence à chaque génération).
-logo:
-  position: "top-left"   # mur du fond, haut gauche (recommandé)
-  size: "medium"         # TODO: affiner
-
-# Options activables (toggles).
-toggles:
-  relight: true                  # relighting version A
-  plate: false                   # plaque d'immatriculation
-  interior_window_whitening: false
-
-# Livraison Google Drive.
-drive:
-  parent_folder_id: ""   # TODO: ID du répertoire parent où créer les dossiers véhicule
+references_actives:            # asset choisi dans chaque bibliothèque uploadable (résolu en Phase 2)
+  showroom_asset_id: ""        # id de la vignette sélectionnée
+  logo_asset_id: ""            # id de la vignette sélectionnée
+  plate_asset_id: ""           # id de la vignette sélectionnée
