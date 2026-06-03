@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import {
   Badge,
@@ -23,12 +23,32 @@ function statusTone(status: string): "default" | "ok" | "ko" | "warn" {
   return "default";
 }
 
+/** Vignette d'un fichier sélectionné (object URL révoqué au démontage). */
+function Thumb({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const url = useMemo(() => URL.createObjectURL(file), [file]);
+  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+
+  return (
+    <div className="relative aspect-square overflow-hidden rounded-lg border border-border bg-surface-2">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={url} alt={file.name} className="h-full w-full object-cover" />
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Retirer ${file.name}`}
+        className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-sm text-zinc-200 backdrop-blur hover:text-red-400"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
 export default function GenerationPage() {
   const [marque, setMarque] = useState("");
   const [modele, setModele] = useState("");
   const [infos, setInfos] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [dragging, setDragging] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [jobId, setJobId] = useState("");
@@ -58,16 +78,17 @@ export default function GenerationPage() {
     }
   };
 
-  const canSubmit = marque.trim() && modele.trim() && files.length > 0 && !submitting;
+  const canSubmit =
+    marque.trim() && modele.trim() && files.length > 0 && !submitting;
 
   return (
     <div>
       <PageTitle
         title="Génération"
-        subtitle="Uploadez les photos d'un véhicule pour lancer le pipeline showroom."
+        subtitle="Photographiez ou importez les photos d'un véhicule pour lancer le pipeline showroom."
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="space-y-6">
         <Card>
           <form onSubmit={submit} className="space-y-4">
             <Field label="Marque">
@@ -88,7 +109,10 @@ export default function GenerationPage() {
                 required
               />
             </Field>
-            <Field label="Infos" hint="Texte libre ajouté au nom du dossier Drive.">
+            <Field
+              label="Infos"
+              hint="Texte libre ajouté au nom du dossier Drive."
+            >
               <input
                 className={inputClass}
                 value={infos}
@@ -97,112 +121,131 @@ export default function GenerationPage() {
               />
             </Field>
 
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragging(true);
-              }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDragging(false);
-                addFiles(e.dataTransfer.files);
-              }}
-              className={`rounded-lg border-2 border-dashed p-6 text-center text-sm transition-colors ${
-                dragging
-                  ? "border-zinc-900 bg-zinc-50"
-                  : "border-zinc-300 bg-zinc-50/50"
-              }`}
-            >
-              <p className="text-zinc-600">
-                Glissez-déposez les photos ici, ou
-              </p>
-              <label className="mt-2 inline-block cursor-pointer rounded-md border border-zinc-300 bg-white px-3 py-1.5 font-medium hover:bg-zinc-100">
-                Parcourir…
+            {/* Deux gros boutons tactiles : caméra (mobile) + galerie. */}
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-surface-2/60 px-3 py-4 text-center text-sm font-medium text-foreground transition-colors hover:border-accent/60 hover:bg-surface-2">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.6}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-7 w-7 text-accent"
+                >
+                  <path d="M3 7h3l2-2h8l2 2h3v12H3z" />
+                  <circle cx="12" cy="13" r="3.5" />
+                </svg>
+                Prendre une photo
                 <input
                   type="file"
-                  multiple
                   accept="image/*"
+                  capture="environment"
+                  multiple
                   className="hidden"
-                  onChange={(e) => addFiles(e.target.files)}
+                  onChange={(e) => {
+                    addFiles(e.target.files);
+                    e.currentTarget.value = "";
+                  }}
+                />
+              </label>
+
+              <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-surface-2/60 px-3 py-4 text-center text-sm font-medium text-foreground transition-colors hover:border-accent/60 hover:bg-surface-2">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.6}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-7 w-7 text-accent"
+                >
+                  <rect x="3" y="4" width="18" height="16" rx="2.5" />
+                  <circle cx="8.5" cy="9.5" r="1.5" />
+                  <path d="M21 16l-5-5L5 20" />
+                </svg>
+                Importer
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    addFiles(e.target.files);
+                    e.currentTarget.value = "";
+                  }}
                 />
               </label>
             </div>
 
             {files.length > 0 && (
-              <ul className="max-h-44 space-y-1 overflow-auto rounded-md border border-zinc-200 p-2 text-sm">
+              <div className="grid grid-cols-3 gap-2">
                 {files.map((f, i) => (
-                  <li
-                    key={`${f.name}-${i}`}
-                    className="flex items-center justify-between gap-2 rounded px-2 py-1 hover:bg-zinc-50"
-                  >
-                    <span className="truncate">{f.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(i)}
-                      className="text-zinc-400 hover:text-red-600"
-                      aria-label="Retirer"
-                    >
-                      ✕
-                    </button>
-                  </li>
+                  <Thumb
+                    key={`${f.name}-${f.lastModified}-${i}`}
+                    file={f}
+                    onRemove={() => removeFile(i)}
+                  />
                 ))}
-              </ul>
+              </div>
             )}
 
             {submitError ? <ErrorBanner error={submitError} /> : null}
 
-            <div className="flex items-center gap-3">
-              <Button type="submit" disabled={!canSubmit}>
-                {submitting ? "Envoi…" : "Lancer"}
-              </Button>
-              <span className="text-xs text-zinc-400">
-                {files.length} photo(s) sélectionnée(s)
-              </span>
-            </div>
+            <Button type="submit" disabled={!canSubmit} className="w-full">
+              {submitting
+                ? "Envoi…"
+                : `Lancer${files.length ? ` (${files.length} photo${files.length > 1 ? "s" : ""})` : ""}`}
+            </Button>
           </form>
         </Card>
 
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Progression</h2>
+            <h2 className="text-sm font-semibold text-foreground">
+              Progression
+            </h2>
             {loading ? <Spinner /> : null}
           </div>
 
           {!jobId ? (
-            <p className="text-sm text-zinc-500">
-              Aucun job en cours. Lancez une génération pour suivre l&apos;avancement.
+            <p className="text-sm text-muted">
+              Aucun job en cours. Lancez une génération pour suivre
+              l&apos;avancement.
             </p>
           ) : (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="font-mono text-xs text-zinc-500">{jobId}</span>
+                <span className="font-mono text-xs text-muted">{jobId}</span>
                 {data?.job ? (
                   <Badge tone={statusTone(data.job.status)}>
                     {data.job.status}
                   </Badge>
                 ) : null}
                 {data?.job?.drive_folder ? (
-                  <span className="text-zinc-500">→ {data.job.drive_folder}</span>
+                  <span className="text-muted">→ {data.job.drive_folder}</span>
                 ) : null}
               </div>
 
               {error ? <ErrorBanner error={error} /> : null}
 
-              <div className="divide-y divide-zinc-100 rounded-md border border-zinc-200">
+              <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
                 {(data?.photos ?? []).map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
+                    className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm"
                   >
-                    <span className="min-w-0 flex-1 truncate" title={p.source_name}>
+                    <span
+                      className="min-w-0 flex-1 truncate"
+                      title={p.source_name}
+                    >
                       {p.source_name}
                     </span>
                     {p.angle ? (
-                      <span className="text-xs text-zinc-500">{p.angle}</span>
+                      <span className="text-xs text-muted">{p.angle}</span>
                     ) : null}
                     {typeof p.confidence === "number" ? (
-                      <span className="text-xs text-zinc-400">
+                      <span className="text-xs text-zinc-500">
                         {Math.round(p.confidence * 100)}%
                       </span>
                     ) : null}
@@ -210,17 +253,20 @@ export default function GenerationPage() {
                   </div>
                 ))}
                 {data && data.photos.length === 0 ? (
-                  <p className="px-3 py-2 text-sm text-zinc-500">
+                  <p className="px-3 py-2.5 text-sm text-muted">
                     En attente de traitement…
                   </p>
                 ) : null}
               </div>
 
-              <div className="flex flex-wrap gap-3 pt-1 text-sm">
-                <Link className="text-zinc-700 underline" href="/qc">
+              <div className="flex flex-wrap gap-4 pt-1 text-sm">
+                <Link className="text-accent underline-offset-4 hover:underline" href="/qc">
                   Aller au QC
                 </Link>
-                <Link className="text-zinc-700 underline" href="/gallery">
+                <Link
+                  className="text-accent underline-offset-4 hover:underline"
+                  href="/gallery"
+                >
                   Galerie de validation
                 </Link>
               </div>

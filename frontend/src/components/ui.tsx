@@ -10,13 +10,16 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "danger" | "ghost";
 }) {
+  // min-h-11 (44px) : cible tactile confortable.
   const base =
-    "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50";
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
   const variants: Record<string, string> = {
-    primary: "bg-zinc-900 text-white hover:bg-zinc-700",
-    secondary: "border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100",
+    primary:
+      "bg-accent text-accent-contrast hover:bg-accent-strong active:bg-accent-strong",
+    secondary:
+      "border border-border bg-surface-2 text-foreground hover:border-accent/50 hover:bg-zinc-700/40",
     danger: "bg-red-600 text-white hover:bg-red-500",
-    ghost: "text-zinc-600 hover:bg-zinc-100",
+    ghost: "text-muted hover:bg-surface-2 hover:text-foreground",
   };
   return (
     <button className={`${base} ${variants[variant]} ${className}`} {...props} />
@@ -32,7 +35,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-xl border border-zinc-200 bg-white p-5 shadow-sm ${className}`}
+      className={`rounded-2xl border border-border bg-surface p-5 shadow-lg shadow-black/30 ${className}`}
     >
       {children}
     </div>
@@ -48,9 +51,11 @@ export function PageTitle({
 }) {
   return (
     <div className="mb-6">
-      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        {title}
+      </h1>
       {subtitle ? (
-        <p className="mt-1 text-sm text-zinc-500">{subtitle}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted">{subtitle}</p>
       ) : null}
     </div>
   );
@@ -58,8 +63,8 @@ export function PageTitle({
 
 export function Spinner({ label }: { label?: string }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-zinc-500">
-      <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700" />
+    <div className="flex items-center gap-2 text-sm text-muted">
+      <span className="h-4 w-4 animate-spin rounded-full border-2 border-surface-2 border-t-accent" />
       {label ?? "Chargement…"}
     </div>
   );
@@ -73,8 +78,16 @@ export function ErrorBanner({ error }: { error: unknown }) {
         ? error.message
         : String(error);
   return (
-    <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
       {msg}
+    </div>
+  );
+}
+
+export function SuccessBanner({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+      {children}
     </div>
   );
 }
@@ -87,14 +100,14 @@ export function Badge({
   tone?: "default" | "ok" | "ko" | "warn";
 }) {
   const tones: Record<string, string> = {
-    default: "bg-zinc-100 text-zinc-700",
-    ok: "bg-green-100 text-green-700",
-    ko: "bg-red-100 text-red-700",
-    warn: "bg-amber-100 text-amber-700",
+    default: "bg-surface-2 text-muted",
+    ok: "bg-emerald-500/15 text-emerald-300",
+    ko: "bg-red-500/15 text-red-300",
+    warn: "bg-amber-500/15 text-amber-300",
   };
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${tones[tone]}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${tones[tone]}`}
     >
       {children}
     </span>
@@ -112,14 +125,16 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-zinc-700">
+      <span className="mb-1.5 block text-sm font-medium text-foreground">
         {label}
       </span>
       {children}
-      {hint ? <span className="mt-1 block text-xs text-zinc-400">{hint}</span> : null}
+      {hint ? (
+        <span className="mt-1 block text-xs text-muted">{hint}</span>
+      ) : null}
     </label>
   );
 }
 
 export const inputClass =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500";
+  "w-full rounded-xl border border-border bg-surface-2 px-4 py-3 text-base text-foreground placeholder:text-zinc-500 outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent";

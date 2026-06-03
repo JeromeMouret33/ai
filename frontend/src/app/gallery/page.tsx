@@ -9,6 +9,7 @@ import {
   ErrorBanner,
   PageTitle,
   Spinner,
+  SuccessBanner,
 } from "@/components/ui";
 import { JobPicker } from "@/components/JobPicker";
 import { getStoredJobId, useJob } from "@/lib/useJob";
@@ -63,17 +64,10 @@ export default function GalleryPage() {
 
       {data ? (
         <>
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <Button
-              onClick={deliver}
-              disabled={delivering || selectedSources.length === 0}
-            >
-              {delivering
-                ? "Livraison…"
-                : `Livrer (${selectedSources.length})`}
-            </Button>
+          <div className="mb-4 grid grid-cols-2 gap-3">
             <Button
               variant="secondary"
+              className="w-full"
               onClick={() =>
                 setSelected(
                   Object.fromEntries(photos.map((p) => [p.id, true])),
@@ -82,7 +76,11 @@ export default function GalleryPage() {
             >
               Tout cocher
             </Button>
-            <Button variant="ghost" onClick={() => setSelected({})}>
+            <Button
+              variant="ghost"
+              className="w-full"
+              onClick={() => setSelected({})}
+            >
               Tout décocher
             </Button>
           </div>
@@ -93,13 +91,15 @@ export default function GalleryPage() {
             </div>
           ) : null}
           {result ? (
-            <div className="mb-4 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-              Livré dans « {result.folder_name} » — {result.uploads.length}{" "}
-              fichier(s) envoyé(s).
+            <div className="mb-4">
+              <SuccessBanner>
+                Livré dans « {result.folder_name} » — {result.uploads.length}{" "}
+                fichier(s) envoyé(s).
+              </SuccessBanner>
             </div>
           ) : null}
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 pb-20">
             {photos.map((p) => {
               const checked = !!selected[p.id];
               return (
@@ -107,13 +107,13 @@ export default function GalleryPage() {
                   key={p.id}
                   type="button"
                   onClick={() => toggle(p.id)}
-                  className={`group overflow-hidden rounded-lg border bg-white text-left transition-all ${
+                  className={`group overflow-hidden rounded-2xl border text-left transition-all ${
                     checked
-                      ? "border-zinc-900 ring-2 ring-zinc-900"
-                      : "border-zinc-200 hover:border-zinc-400"
+                      ? "border-accent ring-2 ring-accent"
+                      : "border-border hover:border-zinc-600"
                   }`}
                 >
-                  <div className="relative bg-zinc-100">
+                  <div className="relative bg-surface-2">
                     {p.candidate_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -122,27 +122,30 @@ export default function GalleryPage() {
                         className="aspect-[3/2] w-full object-cover"
                       />
                     ) : (
-                      <div className="flex aspect-[3/2] w-full items-center justify-center text-xs text-zinc-400">
+                      <div className="flex aspect-[3/2] w-full items-center justify-center text-xs text-muted">
                         Aucun aperçu
                       </div>
                     )}
                     <span
-                      className={`absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full text-xs ${
+                      className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                         checked
-                          ? "bg-zinc-900 text-white"
-                          : "bg-white/80 text-transparent group-hover:text-zinc-300"
+                          ? "bg-accent text-accent-contrast"
+                          : "bg-black/60 text-transparent backdrop-blur group-hover:text-zinc-400"
                       }`}
                     >
                       ✓
                     </span>
                   </div>
-                  <div className="space-y-1 p-2">
-                    <p className="truncate text-xs font-medium" title={p.source_name}>
+                  <div className="space-y-1 bg-surface p-2.5">
+                    <p
+                      className="truncate text-xs font-medium text-foreground"
+                      title={p.source_name}
+                    >
                       {p.target_filename ?? p.source_name}
                     </p>
-                    <div className="flex flex-wrap items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {p.angle ? (
-                        <span className="text-[11px] text-zinc-500">{p.angle}</span>
+                        <span className="text-[11px] text-muted">{p.angle}</span>
                       ) : null}
                       {p.qc_verdict ? (
                         <Badge tone={p.qc_verdict === "ok" ? "ok" : "ko"}>
@@ -158,10 +161,25 @@ export default function GalleryPage() {
 
           {photos.length === 0 ? (
             <Card>
-              <p className="text-sm text-zinc-500">
-                Aucun candidat pour ce job.
-              </p>
+              <p className="text-sm text-muted">Aucun candidat pour ce job.</p>
             </Card>
+          ) : null}
+
+          {/* Barre de livraison fixe, pleine largeur, au-dessus de la tab bar. */}
+          {photos.length > 0 ? (
+            <div className="pointer-events-none fixed inset-x-0 bottom-[72px] z-40 px-4">
+              <div className="pointer-events-auto mx-auto max-w-md rounded-2xl border border-border bg-surface/95 p-2 shadow-lg shadow-black/40 backdrop-blur-md">
+                <Button
+                  className="w-full"
+                  onClick={deliver}
+                  disabled={delivering || selectedSources.length === 0}
+                >
+                  {delivering
+                    ? "Livraison…"
+                    : `Livrer la sélection (${selectedSources.length})`}
+                </Button>
+              </div>
+            </div>
           ) : null}
         </>
       ) : null}

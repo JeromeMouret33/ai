@@ -1,11 +1,33 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { NavBar } from "@/components/NavBar";
+import { BottomNav } from "@/components/BottomNav";
+import { ServiceWorker } from "@/components/ServiceWorker";
 
 export const metadata: Metadata = {
   title: "Showroom IA — GOODCAR",
   description:
     "Génération de showroom virtuel IA pour véhicules : upload, QC, galerie, livraison Drive.",
+  applicationName: "Showroom IA",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Showroom IA",
+  },
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#09090b",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -15,11 +37,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900">
-        <NavBar />
-        <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-8">
+      <body className="min-h-full bg-background text-foreground">
+        {/* Conteneur façon téléphone : une colonne centrée, max-w-md sur desktop.
+            pb généreux pour ne jamais passer sous la bottom tab bar. */}
+        <main className="mx-auto w-full max-w-md px-4 pb-28 pt-6">
           {children}
         </main>
+        <BottomNav />
+        <ServiceWorker />
       </body>
     </html>
   );

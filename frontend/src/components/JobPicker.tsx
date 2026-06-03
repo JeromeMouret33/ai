@@ -15,7 +15,7 @@ export function JobPicker({
 
   return (
     <form
-      className="mb-6 flex flex-wrap items-end gap-3"
+      className="mb-6 space-y-2"
       onSubmit={(e) => {
         e.preventDefault();
         const id = value.trim();
@@ -23,8 +23,8 @@ export function JobPicker({
         onChange(id);
       }}
     >
-      <label className="flex-1 min-w-[260px]">
-        <span className="mb-1 block text-sm font-medium text-zinc-700">
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium text-foreground">
           Identifiant du job
         </span>
         <input
@@ -34,7 +34,7 @@ export function JobPicker({
           onChange={(e) => setValue(e.target.value)}
         />
       </label>
-      <Button type="submit" variant="secondary">
+      <Button type="submit" variant="secondary" className="w-full">
         Charger
       </Button>
     </form>

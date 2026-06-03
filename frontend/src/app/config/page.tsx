@@ -218,10 +218,13 @@ export default function ConfigPage() {
                   ["interior_window_whiten", "Blanchir les vitres (intérieur)"],
                 ] as const
               ).map(([key, label]) => (
-                <label key={key} className="flex items-center gap-3 text-sm">
+                <label
+                  key={key}
+                  className="flex min-h-11 items-center gap-3 text-sm"
+                >
                   <input
                     type="checkbox"
-                    className="h-4 w-4 rounded border-zinc-300"
+                    className="h-5 w-5 rounded border-border bg-surface-2 accent-accent"
                     checked={options[key]}
                     onChange={(e) =>
                       setOptions({ ...options, [key]: e.target.checked })
@@ -348,12 +351,14 @@ export default function ConfigPage() {
             </div>
           </Card>
 
-          <div className="flex items-center gap-3">
-            <Button onClick={save} disabled={saving}>
+          <div className="space-y-2">
+            <Button onClick={save} disabled={saving} className="w-full">
               {saving ? "Enregistrement…" : "Enregistrer"}
             </Button>
             {saved ? (
-              <span className="text-sm text-green-600">Configuration enregistrée.</span>
+              <p className="text-center text-sm text-emerald-400">
+                Configuration enregistrée.
+              </p>
             ) : null}
           </div>
 
@@ -399,8 +404,10 @@ function ReferenceLibrary() {
 
   return (
     <Card>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Bibliothèque de références</h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-foreground">
+          Bibliothèque de références
+        </h2>
         <Button variant="secondary" onClick={load} disabled={loading}>
           Rafraîchir
         </Button>
@@ -425,25 +432,25 @@ function ReferenceLibrary() {
           const ofType = assets.filter((a) => a.type === t);
           return (
             <div key={t}>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                 {t}
               </h3>
               {ofType.length === 0 ? (
-                <p className="text-sm text-zinc-400">Aucun asset.</p>
+                <p className="text-sm text-zinc-500">Aucun asset.</p>
               ) : (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                   {ofType.map((a) => (
                     <button
                       key={a.id}
                       type="button"
                       onClick={() => activate(a)}
-                      className={`overflow-hidden rounded-lg border text-left transition-all ${
+                      className={`overflow-hidden rounded-xl border text-left transition-all ${
                         a.active
-                          ? "border-zinc-900 ring-2 ring-zinc-900"
-                          : "border-zinc-200 hover:border-zinc-400"
+                          ? "border-accent ring-2 ring-accent"
+                          : "border-border hover:border-zinc-600"
                       }`}
                     >
-                      <div className="bg-zinc-100">
+                      <div className="bg-surface-2">
                         {a.thumbnail_url || a.url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -452,12 +459,15 @@ function ReferenceLibrary() {
                             className="aspect-square w-full object-cover"
                           />
                         ) : (
-                          <div className="flex aspect-square w-full items-center justify-center text-xs text-zinc-400">
+                          <div className="flex aspect-square w-full items-center justify-center text-xs text-muted">
                             —
                           </div>
                         )}
                       </div>
-                      <p className="truncate p-1.5 text-xs" title={a.name}>
+                      <p
+                        className="truncate p-1.5 text-xs text-foreground"
+                        title={a.name}
+                      >
                         {a.active ? "★ " : ""}
                         {a.name}
                       </p>
@@ -505,9 +515,9 @@ function UploadForm({
   return (
     <form
       onSubmit={submit}
-      className="space-y-2 rounded-lg border border-zinc-200 p-3"
+      className="space-y-2 rounded-xl border border-border bg-surface-2/40 p-3"
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted">
         Ajouter — {type}
       </p>
       <input
@@ -519,11 +529,16 @@ function UploadForm({
       <input
         type="file"
         accept="image/*"
-        className="block w-full text-xs"
+        className="block w-full text-xs text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-2 file:text-xs file:font-medium file:text-foreground"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
       {error ? <ErrorBanner error={error} /> : null}
-      <Button type="submit" variant="secondary" disabled={busy || !file || !name.trim()}>
+      <Button
+        type="submit"
+        variant="secondary"
+        className="w-full"
+        disabled={busy || !file || !name.trim()}
+      >
         {busy ? "Upload…" : "Uploader"}
       </Button>
     </form>

@@ -71,21 +71,23 @@ export default function HistoryPage() {
 
       {entries && entries.length === 0 ? (
         <Card>
-          <p className="text-sm text-zinc-500">Aucune génération enregistrée.</p>
+          <p className="text-sm text-muted">Aucune génération enregistrée.</p>
         </Card>
       ) : null}
 
       {entries && entries.length > 0 ? (
         <Card className="p-0">
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-border">
             {entries.map((e) => (
               <li
                 key={e.id}
-                className="flex items-center justify-between gap-3 px-5 py-3"
+                className="flex items-center justify-between gap-3 px-4 py-3"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{e.name}</p>
-                  <p className="text-xs text-zinc-400">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {e.name}
+                  </p>
+                  <p className="text-xs text-muted">
                     {e.createdTime
                       ? new Date(e.createdTime).toLocaleString("fr-FR")
                       : "—"}

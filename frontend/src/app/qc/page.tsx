@@ -58,13 +58,13 @@ export default function QcPage() {
 
       {data && flagged.length === 0 ? (
         <Card>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             Aucune photo en échec QC pour ce job.
           </p>
         </Card>
       ) : null}
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="space-y-4">
         {flagged.map((p) => {
           const isKept = kept[p.id];
           return (
@@ -76,7 +76,7 @@ export default function QcPage() {
                 <Badge tone="ko">QC: KO</Badge>
               </div>
 
-              <div className="mb-3 overflow-hidden rounded-md border border-zinc-200 bg-zinc-100">
+              <div className="mb-3 overflow-hidden rounded-xl border border-border bg-surface-2">
                 {p.candidate_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -85,27 +85,28 @@ export default function QcPage() {
                     className="aspect-[3/2] w-full object-cover"
                   />
                 ) : (
-                  <div className="flex aspect-[3/2] w-full items-center justify-center text-sm text-zinc-400">
+                  <div className="flex aspect-[3/2] w-full items-center justify-center text-sm text-muted">
                     Aucun aperçu
                   </div>
                 )}
               </div>
 
               {p.qc_reasons && p.qc_reasons.length > 0 ? (
-                <ul className="mb-3 list-disc space-y-0.5 pl-5 text-sm text-zinc-600">
+                <ul className="mb-3 list-disc space-y-0.5 pl-5 text-sm text-muted">
                   {p.qc_reasons.map((r, i) => (
                     <li key={i}>{r}</li>
                   ))}
                 </ul>
               ) : (
-                <p className="mb-3 text-sm text-zinc-400">Aucune raison fournie.</p>
+                <p className="mb-3 text-sm text-zinc-500">Aucune raison fournie.</p>
               )}
 
-              <div className="flex items-center gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="secondary"
                   disabled={busy === p.id}
                   onClick={() => retry(p)}
+                  className="w-full"
                 >
                   {busy === p.id ? "Relance…" : "Relancer"}
                 </Button>
@@ -114,6 +115,7 @@ export default function QcPage() {
                   onClick={() =>
                     setKept((prev) => ({ ...prev, [p.id]: !prev[p.id] }))
                   }
+                  className="w-full"
                 >
                   {isKept ? "Gardée ✓" : "Garder"}
                 </Button>
