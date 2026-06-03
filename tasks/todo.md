@@ -53,11 +53,15 @@
 - [x] Bug corrigé : en-têtes HTTP assainis en ASCII (`_ascii_header`) — voir lessons.md.
 
 ## Phase 2 — Stockage, nommage, livraison
-- [ ] Supabase : buckets (`references`, `uploads`, `outputs`).
-- [ ] Tables `jobs`, `photos` (statut, angle, tentatives, URLs, retenue oui/non).
-- [ ] Table `reference_assets` (type = showroom/logo/plaque, nom, URL, vignette, actif).
-- [ ] Renommage selon nomenclature (`naming.py`).
-- [ ] Livraison Google Drive : création dossier véhicule dans répertoire parent configuré + upload des photos cochées.
+- [x] Supabase : migration SQL (`supabase/migrations/0001_init.sql`) — buckets `references`/`uploads`/`outputs`.
+- [x] Tables `jobs`, `photos` (statut, angle, tentatives, URLs, `kept`).
+- [x] Table `reference_assets` (type showroom/logo/plaque, nom, URL, vignette, actif) + index « un actif par type ».
+- [x] Client Supabase REST (`storage/supabase.py`) : insert/update/select, upload bucket, get/set asset actif.
+- [x] Renommage selon nomenclature (`naming.py`, Phase 1) consommé par la livraison.
+- [x] Livraison Google Drive (`storage/drive.py`) : `create_vehicle_folder` + `upload_file` + `delete_folder` + `list_history`.
+- [x] Orchestration livraison (`storage/delivery.py`) : manifest + sélection → dossier + upload (mode `--dry-run`).
+- [x] Tests parties pures stockage (URLs/headers Supabase, métadonnées Drive, plan de livraison) — total 25 tests verts.
+- [ ] **Vérif live (Supabase + Drive)** — bloquée réseau (env web) ; à faire en local/env ouvert avec `SUPABASE_*` + `GOOGLE_*`.
 
 ## Phase 3 — Interface web (génération, validation, config, historique)
 - [ ] Front : drag-drop photos + champs (nom véhicule, marque/modèle/infos) + lancer + progression par photo.

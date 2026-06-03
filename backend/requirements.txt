@@ -5,8 +5,11 @@ httpx          # appels OpenRouter (API compatible OpenAI)
 pyyaml         # lecture config (fragments + params)
 python-dotenv  # chargement .env
 pydantic
-# supabase     # Phase 2
-# google-api-python-client, google-auth  # Phase 2 (Drive)
+
+# Phase 2 — stockage & livraison
+# Supabase : accès via REST (httpx, déjà listé) — pas de dépendance dédiée.
+google-api-python-client   # Google Drive
+google-auth                # Auth OAuth Drive
 
 # Dev / tests
 pytest
