@@ -1,0 +1,32 @@
+# Paramètres globaux — éditables dans l'app.
+# STUB : valeurs par défaut indicatives.
+
+# Trois rôles IA, chacun avec son propre modèle (via OpenRouter).
+models:
+  classification: ""                               # TODO: modèle vision (détection d'angle)
+  generation: "google/gemini-3-pro-image-preview"  # Nano Banana Pro (défaut)
+  qc: ""                                            # TODO: modèle vision (contrôle qualité)
+
+# Sortie image.
+image:
+  ratio: "3:2"        # format photo classique (configurable)
+  resolution: "1K"    # ~1080p (configurable)
+  candidates: 1       # nb de candidats par photo (défaut 1)
+
+# Boucle de traitement.
+retries_max: 2        # relances max (décision laissée à l'utilisateur côté UI)
+
+# Logo (poussé en référence à chaque génération).
+logo:
+  position: "top-left"   # mur du fond, haut gauche (recommandé)
+  size: "medium"         # TODO: affiner
+
+# Options activables (toggles).
+toggles:
+  relight: true                  # relighting version A
+  plate: false                   # plaque d'immatriculation
+  interior_window_whitening: false
+
+# Livraison Google Drive.
+drive:
+  parent_folder_id: ""   # TODO: ID du répertoire parent où créer les dossiers véhicule

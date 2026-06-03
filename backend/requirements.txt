@@ -1,0 +1,9 @@
+# Backend — dépendances (Phase 1+). À épingler au fur et à mesure.
+fastapi
+uvicorn[standard]
+httpx          # appels OpenRouter (API compatible OpenAI)
+pyyaml         # lecture config (fragments + params)
+python-dotenv  # chargement .env
+pydantic
+# supabase     # Phase 2
+# google-api-python-client, google-auth  # Phase 2 (Drive)

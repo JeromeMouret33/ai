@@ -1,0 +1,48 @@
+# Fragments de prompt modulaires — éditables dans l'app.
+# L'assembleur (pipeline/prompt_builder.py) concatène uniquement les fragments
+# pertinents selon l'angle détecté (extérieur / intérieur) et les options actives.
+#
+# STUB : textes placeholder. Remplacer par les fragments validés (version A)
+# de prompts-config-goodcar.md.
+
+role: |
+  # TODO: rôle de l'IA (ex. "Tu es un moteur de rendu de showroom automobile...").
+
+vehicle_lock: |
+  # TODO: clauses de fidélité au véhicule (modèle, couleur, détails inchangés).
+
+references: |
+  # TODO: description du rôle de chaque référence (showroom / logo / véhicule / plaque).
+
+task_base: |
+  # TODO: tâche de base (intégrer le véhicule dans le showroom de référence).
+
+relight: |
+  # TODO: relighting version A — surfaces lisses + vitres latérales/arrière uniquement ;
+  # éléments lumineux (DRL, phares, feux) et détails fins (jantes, calandre, badges) verrouillés.
+
+plate: |
+  # TODO: gestion de la plaque d'immatriculation (option).
+
+composition: |
+  # TODO: cadrage / composition (placeholder, surchargé par le preset d'angle).
+
+constraints: |
+  # TODO: contraintes strictes (décor inchangé, format de sortie constant, etc.).
+
+interior: |
+  # TODO: fragment spécifique aux prises de vue intérieures
+  # (option blanchiment des vitres, etc.).
+
+# Presets de cadrage par angle (slug -> directive de composition).
+angle_presets:
+  face-avant: ""            # TODO
+  3-4-avant-gauche: ""      # TODO
+  3-4-avant-droit: ""       # TODO
+  profil-gauche: ""         # TODO
+  profil-droit: ""          # TODO
+  3-4-arriere-gauche: ""    # TODO
+  3-4-arriere-droit: ""     # TODO
+  arriere: ""               # TODO
+  interieur: ""             # TODO
+  detail: ""                # TODO

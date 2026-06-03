@@ -1,3 +1,82 @@
-# TODO
+# TODO — Showroom virtuel IA pour véhicules (GOODCAR)
 
-(Plan de la tâche en cours. À remplir avant toute implémentation.)
+> Objectif : upload ~15 photos d'un véhicule → détection d'angle → génération IA du
+> véhicule dans un showroom de marque fixe → renommage → livraison Google Drive.
+> Rendu 100 % génératif, régularité par garde-fous, **tout réglable via une config éditable dans l'app**.
+
+## Décisions verrouillées
+- 100 % génératif via OpenRouter + Nano Banana Pro (`google/gemini-3-pro-image-preview`).
+- 4 références : showroom, logo, véhicule, plaque d'immatriculation (option).
+- Logo poussé en référence, fidélité max (mur du fond, haut gauche par défaut).
+- Relighting version A (surfaces lisses + vitres latérales/arrière ; lumineux & détails verrouillés). Activable.
+- Ratio = 3:2 (configurable). Résolution = 1K (configurable).
+- 3 modèles distincts (classification / génération / QC), réglables dans l'app.
+- QC à validation humaine : aperçu + confirmation avant relance (pas d'auto-relance silencieuse).
+- Galerie de validation : on coche les photos à livrer avant envoi Drive.
+- Historique des générations (source Drive) + suppression app ↔ dossier Drive.
+- Dossiers véhicule créés dans un répertoire Drive parent configurable.
+- Une plaque showroom par défaut ; bibliothèque extensible.
+- Inpaint écarté pour l'instant (recours).
+- Hébergement : frontend Vercel, backend Railway (ou Render), jobs en tâche de fond.
+- Nb de candidats par photo configurable, défaut 1.
+
+## Nomenclature
+- Dossier Drive : `{Marque} {Modèle} {infos}` (ex. `Peugeot 208 GT-Line`).
+- Fichiers : `{marque}-{modele}_{angle}.jpg`.
+- Slugs d'angle : `face-avant`, `3-4-avant-gauche`, `3-4-avant-droit`, `profil-gauche`,
+  `profil-droit`, `3-4-arriere-gauche`, `3-4-arriere-droit`, `arriere`, `interieur-01`, `detail-01`…
+- Même angle ×N → suffixe `-01`, `-02`.
+
+---
+
+## Phase 0 — Scaffolding ✅ (en cours)
+- [x] Plan consigné dans `tasks/todo.md`.
+- [x] Arborescence de repo (backend / frontend / assets) + stubs documentés.
+- [x] `.env.example`, `requirements.txt`, `.gitignore`, README projet.
+
+## Phase 1 — Config + cœur génératif (CLI, sans interface)
+- [ ] Schéma de config : fragments de prompt + paramètres + 3 modèles + toggles + répertoire Drive.
+- [ ] Assembleur de prompt (`prompt_builder.py`) : concatène les fragments selon angle + options.
+- [ ] Intégration OpenRouter : `generate()` (image), `classify()` (vision), `qc()` (vision) — chacun lit son modèle dans la config.
+- [ ] Classification → angle + confiance + nom de fichier (nomenclature) + nom du dossier véhicule.
+- [ ] QC → verdict + raisons (décision de relance laissée à l'UI), avec vérif zoomée des zones sensibles.
+- [ ] Orchestrateur CLI : boucle sur un dossier de photos.
+- [ ] Test end-to-end sur ~30 photos.
+
+## Phase 2 — Stockage, nommage, livraison
+- [ ] Supabase : buckets (`references`, `uploads`, `outputs`).
+- [ ] Tables `jobs`, `photos` (statut, angle, tentatives, URLs, retenue oui/non).
+- [ ] Table `reference_assets` (type = showroom/logo/plaque, nom, URL, vignette, actif).
+- [ ] Renommage selon nomenclature (`naming.py`).
+- [ ] Livraison Google Drive : création dossier véhicule dans répertoire parent configuré + upload des photos cochées.
+
+## Phase 3 — Interface web (génération, validation, config, historique)
+- [ ] Front : drag-drop photos + champs (nom véhicule, marque/modèle/infos) + lancer + progression par photo.
+- [ ] QC interactif : aperçu de la photo signalée + choix relancer / garder.
+- [ ] Galerie de validation : aperçus + cases à cocher → livrer la sélection sur le Drive.
+- [ ] Écran de config : upload + aperçu vignettes (showroom / logo / plaque) + sélection de l'actif ;
+      édition des fragments ; 3 modèles ; options ; paramètres ; répertoire Drive.
+- [ ] Historique : liste des générations (source Drive) + suppression app + dossier Drive.
+- [ ] Câblage front ↔ backend + déploiement (Vercel + Railway/Render).
+
+## Phase 4 — Robustesse & finitions
+- [ ] Relance ciblée d'une photo, ajustements.
+- [ ] Logs, gestion d'erreurs, suivi des coûts par job.
+- [ ] Affinage des presets par angle.
+
+---
+
+## Garde-fous de régularité
+- Références désignées par rôle (showroom / logo / véhicule / plaque), pas par numéro.
+- Fragments figés en config ; seules variables = angle, cadrage, paramètres.
+- Clauses de préservation : décor inchangé, voiture fidèle.
+- Relight A limité aux surfaces lisses + vitres ; lumineux & détails fins verrouillés.
+- Format de sortie constant (ratio + résolution). Presets de cadrage par angle.
+- QC avec validation humaine avant relance.
+
+## Prérequis externes (à fournir)
+- `OPENROUTER_API_KEY`.
+- Identifiants Supabase (`SUPABASE_URL`, `SUPABASE_KEY`).
+- Identifiants Google Drive (`GOOGLE_*`) + ID du répertoire parent.
+- Assets : plaque showroom de référence, logo GOODCAR HD, image plaque d'immatriculation.
+- `prompts-config-goodcar.md` (fragments validés version A).
