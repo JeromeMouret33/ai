@@ -103,6 +103,20 @@ def upload_file(folder_id: str, filepath: str, name: str, service=None) -> str: 
     return created["id"]
 
 
+def upload_bytes(folder_id: str, data: bytes, name: str, service=None) -> str:  # pragma: no cover
+    """Téléverse un contenu en mémoire (renommé `name`) dans le dossier ; renvoie son id."""
+    import io
+
+    from googleapiclient.http import MediaIoBaseUpload
+
+    service = service or _service()
+    media = MediaIoBaseUpload(io.BytesIO(data), mimetype=guess_mime(name), resumable=True)
+    created = service.files().create(
+        body=file_metadata(name, folder_id), media_body=media, fields="id"
+    ).execute()
+    return created["id"]
+
+
 def delete_folder(folder_id: str, service=None) -> None:  # pragma: no cover
     """Supprime un dossier (et son contenu) — utilisé par l'historique."""
     service = service or _service()

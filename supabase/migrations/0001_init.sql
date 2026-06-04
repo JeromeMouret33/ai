@@ -15,6 +15,7 @@ create table if not exists public.jobs (
     infos           text not null default '',
     drive_folder    text,            -- nom du dossier véhicule (nomenclature)
     drive_folder_id text,            -- id du dossier une fois créé sur Drive
+    cost_total      double precision not null default 0,  -- coût cumulé du job (Phase 4)
     status          text not null default 'pending'
                     check (status in ('pending','processing','done','delivered','error'))
 );
@@ -25,10 +26,14 @@ create table if not exists public.photos (
     created_at      timestamptz not null default now(),
     job_id          uuid not null references public.jobs(id) on delete cascade,
     source_name     text not null,           -- nom du fichier d'origine
+    source_url      text,                    -- chemin/objet de la source (bucket uploads) — pour retry
     angle           text,                    -- slug d'angle détecté
     confidence      double precision,        -- confiance de classification
     attempts        integer not null default 0,
-    candidate_url   text,                    -- URL du candidat retenu (bucket outputs)
+    candidate_url   text,                    -- URL signée du candidat retenu (servie à la lecture)
+    candidate_path  text,                    -- chemin objet du candidat (bucket outputs privé)
+    cost            double precision not null default 0,   -- coût de la photo (Phase 4)
+    usage           jsonb not null default '{}'::jsonb,    -- usage OpenRouter (tokens…)
     target_filename text,                    -- nom de livraison (nomenclature)
     qc_verdict      text check (qc_verdict in ('ok','ko')),
     qc_reasons      jsonb not null default '[]'::jsonb,
@@ -67,12 +72,12 @@ alter table public.reference_assets enable row level security;
 -- =========================================================================
 -- Buckets de stockage (créés via l'API Storage ; rappel ici pour référence)
 -- =========================================================================
---   references : assets de marque (showroom, logo, plaque)
---   uploads    : photos sources déposées pour un job
---   outputs    : candidats générés
+--   references : assets de marque (showroom, logo, plaque) — PUBLIC
+--   uploads    : photos sources déposées pour un job — PRIVÉ
+--   outputs    : candidats générés — PRIVÉ (servis via URLs signées)
 -- Création possible aussi en SQL :
 insert into storage.buckets (id, name, public)
 values ('references','references', true),
        ('uploads','uploads', false),
-       ('outputs','outputs', true)
+       ('outputs','outputs', false)
 on conflict (id) do nothing;

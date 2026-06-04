@@ -20,13 +20,15 @@ l'app et les endpoints de config restent testables hors-ligne.
 
 from __future__ import annotations
 
+import logging
 import os
+import time
 import uuid
 from pathlib import Path
 from typing import Any
 
 from fastapi import (
-    APIRouter, BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile,
+    APIRouter, BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, Request, UploadFile,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -34,8 +36,35 @@ from pydantic import BaseModel
 from backend.auth import get_current_user
 from backend.config import editor
 from backend.config.loader import load_config
+from backend.rate_limit import RateLimiter
+
+logging.basicConfig(
+    level=os.environ.get("LOG_LEVEL", "INFO"),
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+logger = logging.getLogger("showroom.api")
 
 app = FastAPI(title="Showroom IA — GOODCAR")
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.monotonic()
+    response = await call_next(request)
+    logger.info("%s %s -> %s (%.0f ms)", request.method, request.url.path,
+                response.status_code, (time.monotonic() - start) * 1000)
+    return response
+
+
+# Rate limiting des opérations coûteuses (génération OpenRouter payante), par utilisateur.
+_job_limiter = RateLimiter(
+    max_calls=int(os.environ.get("JOBS_PER_MINUTE", "10")), window_seconds=60,
+)
+
+
+def rate_limit_jobs(user: dict[str, Any] = Depends(get_current_user)) -> None:
+    if not _job_limiter.allow(str(user.get("sub", "anon"))):
+        raise HTTPException(429, "Trop de requêtes, réessayez dans un instant.")
 
 # CORS : "*" en dev ; en prod, définir ALLOWED_ORIGINS (URLs séparées par des virgules,
 # ex. l'URL Vercel du frontend).
@@ -136,7 +165,7 @@ def activate_reference_asset(asset_id: str, type: str = Form(...)) -> dict[str, 
 # --------------------------------------------------------------------------- #
 # Jobs
 # --------------------------------------------------------------------------- #
-@protected.post("/api/jobs")
+@protected.post("/api/jobs", dependencies=[Depends(rate_limit_jobs)])
 async def create_job(
     background: BackgroundTasks,
     marque: str = Form(...),
@@ -163,14 +192,18 @@ async def create_job(
     for f in files:
         _require_image(f)
         source = naming.safe_filename(f.filename or "photo")
-        local = job_dir / source
-        local.write_bytes(_read_capped(await f.read()))
+        data = _read_capped(await f.read())
+        (job_dir / source).write_bytes(data)
+        # Source persistée dans le bucket `uploads` (privé) → indispensable au retry.
+        src_path = f"{job_id}/{source}"
+        sb.upload(sb.BUCKET_UPLOADS, src_path, data, content_type=f.content_type or "image/jpeg")
         photo = sb.insert("photos", {"job_id": job_id, "source_name": source,
-                                      "status": "pending"})
-        photos.append({"photo_id": photo["id"], "source": source, "path": str(local)})
+                                      "source_url": src_path, "status": "pending"})
+        photos.append({"photo_id": photo["id"], "source": source, "path": str(job_dir / source)})
 
     from backend.jobs import process_job
     background.add_task(process_job, job_id, photos)
+    logger.info("job %s créé (%d photos) : %s", job_id, len(photos), folder)
     return {"job_id": job_id, "drive_folder": folder, "photos": len(photos)}
 
 
@@ -185,29 +218,39 @@ def get_job(job_id: str) -> dict[str, Any]:
 
 @protected.post("/api/jobs/{job_id}/deliver")
 def deliver_job(job_id: str, body: DeliverBody) -> dict[str, Any]:
-    from backend.storage import delivery, supabase as sb
+    from backend.storage import delivery, drive, supabase as sb
 
     jobs = sb.select("jobs", {"id": job_id})
     if not jobs:
         raise HTTPException(404, "job introuvable")
     rows = sb.select("photos", {"job_id": job_id})
+    # Candidats stockés dans le bucket privé `outputs` : on les télécharge puis on
+    # les pousse sur Drive (renommés). On réutilise build_plan (pur, testé).
     manifest = {
         "drive_folder": jobs[0]["drive_folder"],
         "photos": [
             {"source": p["source_name"], "target_filename": p.get("target_filename"),
-             "candidates": [{"path": p["candidate_url"]}] if p.get("candidate_url") else []}
+             "candidates": [{"path": p["candidate_path"]}] if p.get("candidate_path") else []}
             for p in rows
         ],
     }
-    result = delivery.deliver(manifest, set(body.sources), load_config())
-    sb.update("jobs", {"id": job_id},
-              {"status": "delivered", "drive_folder_id": result.get("folder_id")})
+    plan = delivery.build_plan(manifest, set(body.sources))
+    parent_id = drive.parent_folder_id(load_config())
+    folder_id = drive.create_vehicle_folder(jobs[0]["drive_folder"], parent_id)
+    uploads: list[dict[str, Any]] = []
+    for item in plan:
+        data = sb.download(sb.BUCKET_OUTPUTS, item["candidate_path"])
+        file_id = drive.upload_bytes(folder_id, data, item["target_filename"])
+        uploads.append({"target_filename": item["target_filename"], "drive_file_id": file_id})
+
+    sb.update("jobs", {"id": job_id}, {"status": "delivered", "drive_folder_id": folder_id})
     for src in body.sources:
         sb.update("photos", {"job_id": job_id, "source_name": src}, {"kept": True})
-    return result
+    logger.info("job %s livré : %d fichiers -> dossier %s", job_id, len(uploads), folder_id)
+    return {"folder_name": jobs[0]["drive_folder"], "folder_id": folder_id, "uploads": uploads}
 
 
-@protected.post("/api/photos/{photo_id}/retry")
+@protected.post("/api/photos/{photo_id}/retry", dependencies=[Depends(rate_limit_jobs)])
 def retry(photo_id: str) -> dict[str, Any]:
     from backend.jobs import retry_photo
     return retry_photo(photo_id)

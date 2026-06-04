@@ -119,7 +119,7 @@ def set_active_asset(asset_id: str, asset_type: str) -> dict[str, Any]:
 # Storage
 # --------------------------------------------------------------------------- #
 def upload(bucket: str, path: str, data: bytes, content_type: str = "image/png") -> str:
-    """Téléverse un objet et renvoie son chemin (utiliser public_url pour l'URL)."""
+    """Téléverse un objet et renvoie son chemin (utiliser public_url/signed_url pour l'URL)."""
     import httpx  # import paresseux
 
     headers = {
@@ -133,6 +133,32 @@ def upload(bucket: str, path: str, data: bytes, content_type: str = "image/png")
     if resp.status_code >= 400:
         raise SupabaseError(f"Upload {bucket}/{path} -> {resp.status_code}: {resp.text[:300]}")
     return path
+
+
+def download(bucket: str, path: str) -> bytes:
+    """Télécharge un objet (fonctionne aussi sur bucket privé via la clé service)."""
+    import httpx  # import paresseux
+
+    headers = {"apikey": _key(), "Authorization": f"Bearer {_key()}"}
+    resp = httpx.get(_object_url(bucket, path), headers=headers, timeout=DEFAULT_TIMEOUT)
+    if resp.status_code >= 400:
+        raise SupabaseError(f"Download {bucket}/{path} -> {resp.status_code}: {resp.text[:200]}")
+    return resp.content
+
+
+def create_signed_url(bucket: str, path: str, expires_in: int = 3600) -> str:
+    """URL signée à durée limitée pour un objet d'un bucket privé (ex. outputs)."""
+    import httpx  # import paresseux
+
+    url = f"{_base_url()}/storage/v1/object/sign/{bucket}/{path.lstrip('/')}"
+    headers = {"apikey": _key(), "Authorization": f"Bearer {_key()}",
+               "Content-Type": "application/json"}
+    resp = httpx.post(url, headers=headers, json={"expiresIn": expires_in},
+                      timeout=DEFAULT_TIMEOUT)
+    if resp.status_code >= 400:
+        raise SupabaseError(f"Sign {bucket}/{path} -> {resp.status_code}: {resp.text[:200]}")
+    signed = resp.json().get("signedURL") or resp.json().get("signedUrl", "")
+    return f"{_base_url()}/storage/v1{signed}" if signed.startswith("/object") else f"{_base_url()}{signed}"
 
 
 # --------------------------------------------------------------------------- #

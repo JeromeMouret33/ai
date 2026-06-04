@@ -41,19 +41,18 @@ requêtes (503) au lieu d'ouvrir. Bypass conservé hors production. Testé.
 **Correctif** : refus des fichiers non-image (`content-type` ≠ `image/*`) et
 plafond de taille (`MAX_UPLOAD_BYTES`, défaut 25 Mo) → 400 / 413.
 
-### M1 · Buckets de stockage publics 🟡
-`outputs` (candidats générés) et `references` (assets de marque) sont publics :
-lisibles par toute personne connaissant l'URL (chemins en UUID, non listables).
-**Reco** : si la confidentialité des rendus importe, passer `outputs` en **privé**
-+ URLs signées à durée limitée. `references` public reste acceptable (assets de marque).
+### M1 · Buckets de stockage publics ✅
+`outputs` (rendus) et `uploads` (sources) sont désormais **privés** ; les rendus
+sont servis via **URLs signées** (`create_signed_url`, TTL 7 j) et livrés sur Drive
+par téléchargement authentifié. `references` (assets de marque) reste public.
 
 ### M2 · CORS permissif par défaut 🟡
 `ALLOWED_ORIGINS=*` par défaut. **Reco** : en prod, restreindre à l'URL Vercel.
 (Déjà configurable via la variable.)
 
-### M4 · Pas de limitation de débit / coûts 🟡
-Un utilisateur invité peut lancer de nombreux jobs → coût OpenRouter (génération
-payante). **Reco** : rate limiting par utilisateur/job + suivi des coûts (Phase 4).
+### M4 · Pas de limitation de débit / coûts ✅
+**Correctif** : rate limiting par utilisateur (`JOBS_PER_MINUTE`) sur création de
+job et retry + **suivi des coûts** (usage OpenRouter agrégé par photo/job).
 
 ### M5 · `npm audit` : 2 vulnérabilités modérées 🟡
 `postcss` (XSS) embarqué par Next, **build-time uniquement** (non exploitable au
@@ -67,9 +66,9 @@ runtime de l'app). **Reco** : suivre les mises à jour de Next, ne pas downgrade
   d'exceptions (ex. erreurs Supabase). Reco : messages génériques en prod.
 - **L2 · Filtres PostgREST** ℹ️ — les valeurs (`eq.<val>`) sont URL-encodées par
   httpx → injection de filtres non exploitable. OK.
-- **L3 · JWT en localStorage** ℹ️ — défaut Supabase ; un XSS exposerait le token.
-  React échappe par défaut (pas de `dangerouslySetInnerHTML`). Reco : ajouter une
-  **CSP** stricte côté hébergement.
+- **L3 · JWT en localStorage** ✅ — défaut Supabase ; un XSS exposerait le token.
+  **Atténué** : CSP + en-têtes de sécurité ajoutés (`next.config.ts` :
+  `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS).
 - **L4 · `PUT /config` global** ℹ️ — tout utilisateur invité peut modifier prompts,
   modèles et dossier Drive (config globale). Acceptable dans le modèle « équipe de
   confiance » ; ajouter un rôle admin si besoin de cloisonner.
@@ -90,6 +89,7 @@ runtime de l'app). **Reco** : suivre les mises à jour de Next, ne pas downgrade
 ## À faire avant la mise en production (checklist)
 1. Définir `ENVIRONMENT=production` + `SUPABASE_JWT_SECRET` (auth fail-closed).
 2. Restreindre `ALLOWED_ORIGINS` à l'URL Vercel.
-3. Appliquer la migration (RLS incluse) sur le projet Supabase.
-4. (Reco) Passer `outputs` en bucket privé + URLs signées.
-5. (Reco) Ajouter une CSP + un rate limiting.
+3. Appliquer la migration (RLS + buckets privés inclus) sur le projet Supabase.
+4. ✅ `outputs`/`uploads` privés + URLs signées (fait).
+5. ✅ CSP + en-têtes de sécurité + rate limiting (fait).
+6. (Reco restante) Messages d'erreur génériques en prod (L1) ; durcir la CSP (nonces).

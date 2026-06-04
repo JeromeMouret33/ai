@@ -20,6 +20,8 @@ import os
 import re
 from typing import Any
 
+from . import cost
+
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_TIMEOUT = 180.0  # jobs longs (Nano Banana Pro)
 
@@ -31,6 +33,25 @@ class OpenRouterError(RuntimeError):
 # --------------------------------------------------------------------------- #
 # Appels haut niveau
 # --------------------------------------------------------------------------- #
+def vision_json_usage(
+    model: str,
+    image_paths: list[str],
+    instruction: str,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Comme `vision_json`, mais renvoie aussi l'usage/coût (Phase 4)."""
+    content: list[dict[str, Any]] = [{"type": "text", "text": instruction}]
+    content += [_image_block(p) for p in image_paths]
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": content}],
+        "response_format": {"type": "json_object"},
+        "usage": {"include": True},
+    }
+    data = _post(payload, timeout)
+    return _extract_json(_first_text(data)), cost.extract_usage(data)
+
+
 def vision_json(
     model: str,
     image_paths: list[str],
@@ -41,16 +62,32 @@ def vision_json(
 
     Utilisé par la classification et le contrôle qualité.
     """
-    content: list[dict[str, Any]] = [{"type": "text", "text": instruction}]
+    return vision_json_usage(model, image_paths, instruction, timeout)[0]
+
+
+def generate_image_usage(
+    model: str,
+    prompt: str,
+    image_paths: list[str],
+    n: int = 1,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> tuple[list[bytes], dict[str, Any]]:
+    """Comme `generate_image`, mais renvoie aussi l'usage/coût agrégé (Phase 4)."""
+    content: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
     content += [_image_block(p) for p in image_paths]
     payload = {
         "model": model,
         "messages": [{"role": "user", "content": content}],
-        "response_format": {"type": "json_object"},
+        "modalities": ["image", "text"],
+        "usage": {"include": True},
     }
-    data = _post(payload, timeout)
-    text = _first_text(data)
-    return _extract_json(text)
+    out: list[bytes] = []
+    usage: dict[str, Any] = {}
+    for _ in range(max(1, n)):
+        data = _post(payload, timeout)
+        out.extend(_images_from_response(data))
+        usage = cost.merge_usage(usage, cost.extract_usage(data))
+    return out, usage
 
 
 def generate_image(
@@ -60,23 +97,8 @@ def generate_image(
     n: int = 1,
     timeout: float = DEFAULT_TIMEOUT,
 ) -> list[bytes]:
-    """Génère `n` candidats à partir d'un prompt + références (images).
-
-    Renvoie la liste des images générées (bytes). OpenRouter ne garantit pas le
-    batch côté serveur : on boucle `n` fois et on agrège.
-    """
-    content: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
-    content += [_image_block(p) for p in image_paths]
-    payload = {
-        "model": model,
-        "messages": [{"role": "user", "content": content}],
-        "modalities": ["image", "text"],
-    }
-    out: list[bytes] = []
-    for _ in range(max(1, n)):
-        data = _post(payload, timeout)
-        out.extend(_images_from_response(data))
-    return out
+    """Génère `n` candidats à partir d'un prompt + références (images)."""
+    return generate_image_usage(model, prompt, image_paths, n, timeout)[0]
 
 
 # --------------------------------------------------------------------------- #

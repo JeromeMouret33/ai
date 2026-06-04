@@ -82,9 +82,16 @@
 - [ ] Reco prod : bucket `outputs` privé + URLs signées, CSP, rate limiting/coûts (Phase 4).
 
 ## Phase 4 — Robustesse & finitions
-- [ ] Relance ciblée d'une photo, ajustements.
-- [ ] Logs, gestion d'erreurs, suivi des coûts par job.
-- [ ] Affinage des presets par angle.
+### Faisable maintenant ✅
+- [x] Logs structurés (backend) + middleware de requêtes + logs par étape du pipeline.
+- [x] Suivi des coûts : usage OpenRouter capté (`cost.py`) → colonnes `photos.cost/usage` + `jobs.cost_total`.
+- [x] Rate limiting par utilisateur (`rate_limit.py`) sur création de job + retry.
+- [x] Retry robuste : sources persistées (bucket `uploads`), re-téléchargées à la relance (`retry_photo`).
+- [x] Sécu : buckets `outputs`/`uploads` privés + URLs signées ; CSP + en-têtes de sécurité (`next.config.ts`).
+- [x] Tests parties pures (cost, rate limiter) — total 46 tests backend verts.
+### Après le premier run live
+- [ ] Affinage du réglage fin du retry (modif d'un réglage avant relance).
+- [ ] Affinage des presets par angle (sur rendus réels).
 
 ---
 

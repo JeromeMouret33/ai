@@ -13,6 +13,21 @@ from . import openrouter
 from .prompt_builder import BuiltPrompt
 
 
+def generate_usage(
+    built: BuiltPrompt,
+    references: dict[str, str],
+    config: dict[str, Any],
+) -> tuple[list[bytes], dict[str, Any]]:
+    """Comme `generate`, mais renvoie aussi l'usage/coût agrégé (Phase 4)."""
+    model = config["params"]["models"].get("generation")
+    if not model:
+        raise ValueError("Aucun modèle de génération configuré (params.models.generation).")
+
+    n = int(config["params"].get("candidates_per_photo", 1) or 1)
+    image_paths = _ordered_reference_paths(built.reference_roles, references)
+    return openrouter.generate_image_usage(model, built.text, image_paths, n=n)
+
+
 def generate(
     built: BuiltPrompt,
     references: dict[str, str],
@@ -30,14 +45,7 @@ def generate(
     Returns:
         Liste d'images générées (bytes), une par candidat.
     """
-    model = config["params"]["models"].get("generation")
-    if not model:
-        raise ValueError("Aucun modèle de génération configuré (params.models.generation).")
-
-    n = int(config["params"].get("candidates_per_photo", 1) or 1)
-
-    image_paths = _ordered_reference_paths(built.reference_roles, references)
-    return openrouter.generate_image(model, built.text, image_paths, n=n)
+    return generate_usage(built, references, config)[0]
 
 
 def _ordered_reference_paths(roles: list[str], references: dict[str, str]) -> list[str]:
