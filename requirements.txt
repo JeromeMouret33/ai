@@ -1,2 +1,13 @@
 # Déploiement backend (Railway/Render détectent Python via ce fichier à la racine).
--r backend/requirements.txt
+# Liste autonome (pas de `-r` imbriqué : certains builders ne résolvent pas le chemin).
+# Garder synchronisé avec backend/requirements.txt.
+fastapi
+uvicorn[standard]
+python-multipart
+httpx
+pyyaml
+ruamel.yaml
+python-dotenv
+pydantic
+google-api-python-client
+google-auth
