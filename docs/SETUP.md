@@ -26,8 +26,9 @@ Modèles utilisés (déjà dans `backend/config/params.yaml`, éditables dans l'
 1. Créer un projet sur https://supabase.com.
 2. **Schéma** : SQL Editor → coller le contenu de `supabase/migrations/0001_init.sql` → **Run**.
    Ça crée les tables `jobs`, `photos`, `reference_assets` **et** les buckets `references`, `uploads`, `outputs`.
-3. Vérifier les buckets : Storage → `references` et `outputs` doivent être **publics**, `uploads` privé
-   (le SQL les crée déjà ainsi ; ajuster si besoin).
+3. Vérifier les buckets : Storage → `references` **public** ; `uploads` et `outputs` **privés**
+   (le SQL les crée déjà ainsi). Les rendus sont servis via **URLs signées**, ne pas
+   rendre `outputs`/`uploads` publics (exposerait rendus et photos sources).
 4. Settings → **API** :
    - Project URL → `SUPABASE_URL`
    - clé **`service_role`** (secrète, backend uniquement) → `SUPABASE_KEY`

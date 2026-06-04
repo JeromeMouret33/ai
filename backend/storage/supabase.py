@@ -6,7 +6,7 @@ client OpenRouter et facile à tester côté construction de requêtes.
 Auth : `SUPABASE_URL` + `SUPABASE_KEY` (clé service role côté backend).
 httpx est importé paresseusement pour garder les helpers testables hors réseau.
 
-Buckets : references (public), uploads (privé), outputs (public).
+Buckets : references (public), uploads (privé), outputs (privé, servi via URLs signées).
 Tables   : jobs, photos, reference_assets (voir supabase/migrations/0001_init.sql).
 """
 
@@ -64,7 +64,7 @@ def _object_url(bucket: str, path: str) -> str:
 
 
 def public_url(bucket: str, path: str) -> str:
-    """URL publique d'un objet (buckets publics : references, outputs)."""
+    """URL publique d'un objet (bucket public : references uniquement)."""
     return f"{_base_url()}/storage/v1/object/public/{bucket}/{path.lstrip('/')}"
 
 

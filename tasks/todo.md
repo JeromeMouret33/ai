@@ -79,7 +79,7 @@
 
 ## Sécurité — audit fait (docs/SECURITY-AUDIT.md)
 - [x] RLS activé (tables Supabase), path traversal corrigé, auth fail-closed en prod, validation des uploads (type + taille).
-- [ ] Reco prod : bucket `outputs` privé + URLs signées, CSP, rate limiting/coûts (Phase 4).
+- [x] Reco prod traitées en Phase 4 : buckets `outputs`/`uploads` privés + URLs signées, CSP, rate limiting/coûts.
 
 ## Phase 4 — Robustesse & finitions
 ### Faisable maintenant ✅

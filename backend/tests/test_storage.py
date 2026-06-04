@@ -11,8 +11,9 @@ def test_supabase_urls_and_headers(monkeypatch):
     assert sb._rest_url("jobs") == "https://proj.supabase.co/rest/v1/jobs"
     assert sb._object_url("outputs", "/a/b.png") == \
         "https://proj.supabase.co/storage/v1/object/outputs/a/b.png"
-    assert sb.public_url("outputs", "a/b.png") == \
-        "https://proj.supabase.co/storage/v1/object/public/outputs/a/b.png"
+    # public_url ne sert que le bucket public `references`.
+    assert sb.public_url("references", "a/b.png") == \
+        "https://proj.supabase.co/storage/v1/object/public/references/a/b.png"
     h = sb._rest_headers(prefer="return=representation")
     assert h["apikey"] == "service-key"
     assert h["Authorization"] == "Bearer service-key"
