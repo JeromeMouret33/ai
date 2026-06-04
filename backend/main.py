@@ -36,10 +36,11 @@ from pydantic import BaseModel
 from backend.auth import get_current_user
 from backend.config import editor
 from backend.config.loader import load_config
+from backend.env import env_int, env_str
 from backend.rate_limit import RateLimiter
 
 logging.basicConfig(
-    level=os.environ.get("LOG_LEVEL", "INFO"),
+    level=env_str("LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 logger = logging.getLogger("showroom.api")
@@ -57,9 +58,7 @@ async def log_requests(request: Request, call_next):
 
 
 # Rate limiting des opérations coûteuses (génération OpenRouter payante), par utilisateur.
-_job_limiter = RateLimiter(
-    max_calls=int(os.environ.get("JOBS_PER_MINUTE", "10")), window_seconds=60,
-)
+_job_limiter = RateLimiter(max_calls=env_int("JOBS_PER_MINUTE", 10), window_seconds=60)
 
 
 def rate_limit_jobs(user: dict[str, Any] = Depends(get_current_user)) -> None:
@@ -67,8 +66,8 @@ def rate_limit_jobs(user: dict[str, Any] = Depends(get_current_user)) -> None:
         raise HTTPException(429, "Trop de requêtes, réessayez dans un instant.")
 
 # CORS : "*" en dev ; en prod, définir ALLOWED_ORIGINS (URLs séparées par des virgules,
-# ex. l'URL Vercel du frontend).
-_origins_env = os.environ.get("ALLOWED_ORIGINS", "*").strip()
+# ex. l'URL Vercel du frontend). Vide -> "*" (évite de bloquer tout par mégarde).
+_origins_env = env_str("ALLOWED_ORIGINS", "*")
 _allow_origins = ["*"] if _origins_env == "*" else [o.strip() for o in _origins_env.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
@@ -80,8 +79,8 @@ app.add_middleware(
 # Routes protégées par l'authentification (toutes sauf /api/health).
 protected = APIRouter(dependencies=[Depends(get_current_user)])
 
-JOB_STORAGE = Path(os.environ.get("JOB_STORAGE_DIR", "outputs"))
-MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))  # 25 Mo/fichier
+JOB_STORAGE = Path(env_str("JOB_STORAGE_DIR", "outputs"))
+MAX_UPLOAD_BYTES = env_int("MAX_UPLOAD_BYTES", 25 * 1024 * 1024)  # 25 Mo/fichier
 
 
 def _require_image(file: UploadFile) -> None:

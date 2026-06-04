@@ -16,6 +16,7 @@ import tempfile
 from typing import Any
 
 from backend.config.loader import load_config
+from backend.env import env_int
 from backend.pipeline import classify as classify_mod
 from backend.pipeline import cost as cost_mod
 from backend.pipeline import generate as generate_mod
@@ -26,7 +27,7 @@ from backend.storage import supabase as sb
 logger = logging.getLogger("showroom.jobs")
 
 # Durée de validité des URLs signées des candidats (défaut 7 jours).
-SIGNED_URL_TTL = int(os.environ.get("SIGNED_URL_TTL", str(7 * 24 * 3600)))
+SIGNED_URL_TTL = env_int("SIGNED_URL_TTL", 7 * 24 * 3600)
 
 
 def _active_reference_urls() -> dict[str, str]:
