@@ -1,31 +1,26 @@
-"""Authentification — vérification du JWT Supabase (Google OAuth, invite-only).
+"""Authentification — vérification du JWT Supabase (login Google/Apple, invite-only).
 
-Supabase émet des access tokens JWT signés en HS256 avec le secret du projet
-(`SUPABASE_JWT_SECRET`). On vérifie la signature en pur stdlib (hmac/hashlib) :
-pas de dépendance crypto externe, suffisant pour HS256.
+Supporte les deux régimes de signature Supabase :
+- **ES256/RS256** (nouvelles « JWT Signing Keys ») → vérification via **JWKS**
+  (`{SUPABASE_URL}/auth/v1/.well-known/jwks.json`).
+- **HS256** (ancien « legacy JWT secret ») → vérification avec `SUPABASE_JWT_SECRET`.
+Le bon chemin est choisi selon l'algorithme déclaré dans le token.
 
-Modèle d'accès invite-only : géré côté Supabase (signups désactivés, provider
-Google). Défense en profondeur optionnelle ici via `AUTH_ALLOWED_EMAILS`
-(liste blanche d'emails, séparés par des virgules).
-
-Dev : si `SUPABASE_JWT_SECRET` n'est pas défini, l'auth est DÉSACTIVÉE (un
-utilisateur "dev" est renvoyé). En production, définir le secret active la garde.
-
-> Si le projet Supabase utilise des clés de signature asymétriques (ES256/RS256
-> via JWKS), remplacer la vérification HS256 par PyJWT + JWKS.
+Invite-only : géré côté Supabase (+ liste blanche optionnelle `AUTH_ALLOWED_EMAILS`).
+Dev : si ni `SUPABASE_URL` ni `SUPABASE_JWT_SECRET` ne sont définis, l'auth est
+DÉSACTIVÉE (utilisateur "dev"). En production, l'absence de config → 503.
 """
 
 from __future__ import annotations
 
-import base64
-import hashlib
-import hmac
-import json
-import os
-import time
+from functools import lru_cache
 from typing import Any
 
+import jwt
 from fastapi import HTTPException, Request
+from jwt import PyJWKClient
+
+from backend.env import env_str
 
 SUPABASE_AUD = "authenticated"
 
@@ -35,43 +30,45 @@ class AuthError(HTTPException):
         super().__init__(status_code=status, detail=detail)
 
 
-def _b64url_decode(segment: str) -> bytes:
-    pad = "=" * (-len(segment) % 4)
-    return base64.urlsafe_b64decode(segment + pad)
+@lru_cache(maxsize=4)
+def _jwk_client(jwks_url: str) -> PyJWKClient:
+    """Client JWKS mis en cache (les clés publiques sont elles-mêmes cachées)."""
+    return PyJWKClient(jwks_url)
 
 
-def verify_token(token: str, secret: str) -> dict[str, Any]:
-    """Vérifie un JWT HS256 et renvoie le payload. Lève AuthError sinon."""
+def _jwks_url() -> str:
+    base = env_str("SUPABASE_URL").rstrip("/")
+    return f"{base}/auth/v1/.well-known/jwks.json" if base else ""
+
+
+def verify_token(token: str) -> dict[str, Any]:
+    """Vérifie un JWT Supabase (HS256 legacy ou ES256/RS256 via JWKS)."""
     try:
-        header_b64, payload_b64, sig_b64 = token.split(".")
-    except ValueError:
-        raise AuthError(401, "Token mal formé.")
+        alg = jwt.get_unverified_header(token).get("alg", "")
+    except jwt.PyJWTError as exc:
+        raise AuthError(401, "Token mal formé.") from exc
 
-    header = json.loads(_b64url_decode(header_b64))
-    if header.get("alg") != "HS256":
-        raise AuthError(401, f"Algorithme non supporté: {header.get('alg')}")
-
-    signing_input = f"{header_b64}.{payload_b64}".encode("ascii")
-    expected = hmac.new(secret.encode("utf-8"), signing_input, hashlib.sha256).digest()
-    if not hmac.compare_digest(expected, _b64url_decode(sig_b64)):
-        raise AuthError(401, "Signature invalide.")
-
-    payload = json.loads(_b64url_decode(payload_b64))
-
-    exp = payload.get("exp")
-    if exp is not None and time.time() > float(exp):
-        raise AuthError(401, "Token expiré.")
-
-    aud = payload.get("aud")
-    auds = aud if isinstance(aud, list) else [aud]
-    if SUPABASE_AUD not in auds:
-        raise AuthError(401, "Audience invalide.")
-
+    try:
+        if alg == "HS256":
+            secret = env_str("SUPABASE_JWT_SECRET")
+            if not secret:
+                raise AuthError(401, "Token HS256 mais SUPABASE_JWT_SECRET absent.")
+            payload = jwt.decode(token, secret, algorithms=["HS256"], audience=SUPABASE_AUD)
+        else:
+            url = _jwks_url()
+            if not url:
+                raise AuthError(401, "Token asymétrique mais SUPABASE_URL absent (JWKS).")
+            key = _jwk_client(url).get_signing_key_from_jwt(token).key
+            payload = jwt.decode(token, key, algorithms=[alg], audience=SUPABASE_AUD)
+    except jwt.ExpiredSignatureError as exc:
+        raise AuthError(401, "Token expiré.") from exc
+    except jwt.InvalidTokenError as exc:
+        raise AuthError(401, f"Token invalide : {exc}") from exc
     return payload
 
 
 def _allowed(email: str | None) -> bool:
-    allowlist = os.environ.get("AUTH_ALLOWED_EMAILS")
+    allowlist = env_str("AUTH_ALLOWED_EMAILS")
     if not allowlist:
         return True  # pas de liste blanche -> on s'appuie sur l'invite-only Supabase
     allowed = {e.strip().lower() for e in allowlist.split(",") if e.strip()}
@@ -79,19 +76,18 @@ def _allowed(email: str | None) -> bool:
 
 
 def get_current_user(request: Request) -> dict[str, Any]:
-    """Dependency FastAPI : renvoie l'utilisateur courant ou lève 401/403."""
-    secret = os.environ.get("SUPABASE_JWT_SECRET")
-    if not secret:
+    """Dependency FastAPI : renvoie l'utilisateur courant ou lève 401/403/503."""
+    configured = bool(env_str("SUPABASE_URL") or env_str("SUPABASE_JWT_SECRET"))
+    if not configured:
         # Échec SÛR : en production, on refuse plutôt que d'ouvrir l'app.
-        if os.environ.get("ENVIRONMENT", "").lower() == "production":
-            raise AuthError(503, "Authentification non configurée (SUPABASE_JWT_SECRET manquant).")
-        # Hors production : auth désactivée (dev/test).
+        if env_str("ENVIRONMENT").lower() == "production":
+            raise AuthError(503, "Authentification non configurée (SUPABASE_URL manquant).")
         return {"sub": "dev", "email": "dev@local", "auth_disabled": True}
 
     header = request.headers.get("Authorization", "")
     if not header.startswith("Bearer "):
         raise AuthError(401, "Token d'authentification manquant.")
-    payload = verify_token(header[len("Bearer "):].strip(), secret)
+    payload = verify_token(header[len("Bearer "):].strip())
 
     email = payload.get("email")
     if not _allowed(email):

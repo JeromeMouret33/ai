@@ -22,9 +22,10 @@ def test_safe_filename_keeps_clean_names():
     assert naming.safe_filename("peugeot-208_face-avant.jpg") == "peugeot-208_face-avant.jpg"
 
 
-# --- Auth fail-closed en production ---
+# --- Auth fail-closed en production (ni SUPABASE_URL ni secret) ---
 def test_auth_fails_closed_in_production(monkeypatch):
     monkeypatch.delenv("SUPABASE_JWT_SECRET", raising=False)
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
     monkeypatch.setenv("ENVIRONMENT", "production")
     req = type("R", (), {"headers": {}})()
     with pytest.raises(auth.AuthError) as exc:
@@ -34,6 +35,17 @@ def test_auth_fails_closed_in_production(monkeypatch):
 
 def test_auth_dev_bypass_outside_production(monkeypatch):
     monkeypatch.delenv("SUPABASE_JWT_SECRET", raising=False)
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
     monkeypatch.delenv("ENVIRONMENT", raising=False)
     req = type("R", (), {"headers": {}})()
     assert auth.get_current_user(req)["auth_disabled"] is True  # type: ignore[arg-type]
+
+
+def test_auth_missing_bearer_when_configured(monkeypatch):
+    # Configuré (SUPABASE_URL présent) mais pas de header -> 401.
+    monkeypatch.setenv("SUPABASE_URL", "https://proj.supabase.co")
+    monkeypatch.delenv("SUPABASE_JWT_SECRET", raising=False)
+    req = type("R", (), {"headers": {}})()
+    with pytest.raises(auth.AuthError) as exc:
+        auth.get_current_user(req)  # type: ignore[arg-type]
+    assert exc.value.status_code == 401

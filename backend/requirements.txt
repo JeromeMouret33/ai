@@ -7,6 +7,7 @@ pyyaml         # lecture config (fragments + params)
 ruamel.yaml    # édition config round-trip (préserve les commentaires)
 python-dotenv  # chargement .env
 pydantic
+pyjwt[crypto]  # vérification JWT Supabase (JWKS ES256 + HS256)
 
 # Phase 2 — stockage & livraison
 # Supabase : accès via REST (httpx, déjà listé) — pas de dépendance dédiée.

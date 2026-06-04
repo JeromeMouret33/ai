@@ -117,22 +117,32 @@ Sur les appareils Apple, « Se connecter avec Apple » authentifie via l'Apple I
 
 ## 4. Variables d'environnement
 
-Copie `.env.example` → `.env` (en local) et renseigne. En prod, déclare-les comme secrets de la plateforme.
+### Backend (Railway/Render)
+| Variable | Valeur / source | Requis |
+|---|---|---|
+| `OPENROUTER_API_KEY` | clé OpenRouter (`sk-or-…`) | ✅ |
+| `SUPABASE_URL` | Supabase → Settings → API → **Project URL** | ✅ |
+| `SUPABASE_KEY` | Supabase → Settings → API → clé **`service_role`** | ✅ |
+| `ENVIRONMENT` | `production` (auth fail-closed) | ✅ |
+| `ALLOWED_ORIGINS` | URL Vercel du front | ✅ (prod) |
+| `AUTH_ALLOWED_EMAILS` | emails autorisés, séparés par virgules | reco |
+| `SUPABASE_JWT_SECRET` | **optionnel** — seulement si tokens HS256 (legacy). Avec les nouvelles « JWT Signing Keys », laisser vide : la vérif se fait via **JWKS** (depuis `SUPABASE_URL`) | non |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REFRESH_TOKEN` / `GOOGLE_DRIVE_PARENT_FOLDER_ID` | OAuth **Drive** (≠ login) | livraison |
+| `JOBS_PER_MINUTE`, `SIGNED_URL_TTL`, `MAX_UPLOAD_BYTES`, `LOG_LEVEL` | défauts OK | non |
 
-```
-OPENROUTER_API_KEY=
-SUPABASE_URL=
-SUPABASE_KEY=
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REFRESH_TOKEN=
-GOOGLE_DRIVE_PARENT_FOLDER_ID=
-```
+> 🔑 **Auth** : le backend vérifie les tokens via **JWKS** à partir de `SUPABASE_URL`
+> (compatible nouvelles clés ES256 **et** HS256 legacy). `SUPABASE_JWT_SECRET` n'est
+> donc pas nécessaire pour un projet récent.
+>
+> ⚠️ **Drive ≠ login** : les `GOOGLE_*` sont pour Google Drive. Le client OAuth du
+> *login* Google se configure **dans Supabase**, pas ici.
 
-Frontend (Vercel) : une seule variable —
-```
-NEXT_PUBLIC_API_BASE=https://<ton-backend>.up.railway.app
-```
+### Frontend (Vercel)
+| Variable | Valeur |
+|---|---|
+| `NEXT_PUBLIC_API_BASE` | URL publique du backend Railway |
+| `NEXT_PUBLIC_SUPABASE_URL` | = `SUPABASE_URL` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → API → clé **`anon` public** |
 
 ---
 
