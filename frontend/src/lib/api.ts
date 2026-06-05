@@ -64,6 +64,7 @@ export interface ConfigOptions {
   relight_enabled: boolean;
   plate_enabled: boolean;
   interior_window_whiten: boolean;
+  purge_apres_export?: boolean;
   [key: string]: unknown;
 }
 
@@ -135,9 +136,15 @@ export interface Job {
   marque: string;
   modele: string;
   infos: string;
+  client_nom?: string;
+  client_prenom?: string;
   drive_folder: string;
+  drive_folder_id?: string | null;
   status: string;
   cost_total?: number; // coût cumulé OpenRouter (USD)
+  created_at?: string;
+  delivered_at?: string | null;
+  photo_count?: number | null; // présent dans la liste /jobs
 }
 
 export interface JobDetail {
@@ -248,20 +255,27 @@ export const api = {
   },
 
   // Jobs
+  listJobs: () => request<Job[]>("/jobs"),
   createJob: (
     marque: string,
     modele: string,
     infos: string,
+    clientNom: string,
+    clientPrenom: string,
     files: File[],
   ) => {
     const fd = new FormData();
     fd.append("marque", marque);
     fd.append("modele", modele);
     fd.append("infos", infos);
+    fd.append("client_nom", clientNom);
+    fd.append("client_prenom", clientPrenom);
     files.forEach((f) => fd.append("files", f));
     return request<CreateJobResult>("/jobs", { method: "POST", body: fd });
   },
   getJob: (id: string) => request<JobDetail>(`/jobs/${id}`),
+  deleteJob: (id: string) =>
+    request<{ deleted: string }>(`/jobs/${id}`, { method: "DELETE" }),
   deliverJob: (id: string, sources: string[]) =>
     request<DeliverResult>(`/jobs/${id}/deliver`, {
       method: "POST",

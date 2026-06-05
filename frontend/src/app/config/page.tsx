@@ -111,7 +111,7 @@ export default function ConfigPage() {
   const [error, setError] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [savingPrompts, setSavingPrompts] = useState(false);
 
   // Champs éditables (copies locales).
   const [fragments, setFragments] = useState<Record<string, string>>({});
@@ -124,6 +124,7 @@ export default function ConfigPage() {
     relight_enabled: false,
     plate_enabled: false,
     interior_window_whiten: false,
+    purge_apres_export: false,
   });
   const [params, setParams] = useState<{
     ratio: string;
@@ -183,12 +184,11 @@ export default function ConfigPage() {
     void load();
   }, [load]);
 
-  const save = async () => {
+  // Sauvegarde des RÉGLAGES uniquement (modèles, options, paramètres, nomenclature).
+  const saveSettings = async () => {
     setSaving(true);
     setError(null);
-    setSaved(false);
     try {
-      // Le PATCH params respecte la structure du fichier : racine `parametres`.
       const paramsPatch: ConfigParams = {
         models,
         ratio: params.ratio,
@@ -203,21 +203,32 @@ export default function ConfigPage() {
         fichier: nomenclature.fichier,
       };
       const patch: ConfigPatch = {
-        fragments: fragments as Partial<ConfigFragments>,
-        params: {
-          parametres: paramsPatch,
-          options,
-          nomenclature: nomenclaturePatch,
-        },
+        params: { parametres: paramsPatch, options, nomenclature: nomenclaturePatch },
       };
       hydrate(await api.putConfig(patch));
-      setSaved(true);
-      toast.success("Configuration enregistrée.");
+      toast.success("Réglages enregistrés.");
     } catch (e) {
       setError(e);
       toast.error(e instanceof Error ? e.message : "Échec de l'enregistrement.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Sauvegarde DÉDIÉE des prompts (fragments) — segmentée des réglages.
+  const savePrompts = async () => {
+    setSavingPrompts(true);
+    setError(null);
+    try {
+      hydrate(
+        await api.putConfig({ fragments: fragments as Partial<ConfigFragments> }),
+      );
+      toast.success("Prompts enregistrés.");
+    } catch (e) {
+      setError(e);
+      toast.error(e instanceof Error ? e.message : "Échec de l'enregistrement.");
+    } finally {
+      setSavingPrompts(false);
     }
   };
 
@@ -241,6 +252,9 @@ export default function ConfigPage() {
 
       {config ? (
         <>
+          {/* Bibliothèque de références — souvent modifiée -> en haut. */}
+          <ReferenceLibrary />
+
           {/* Modèles */}
           <Card>
             <h2 className="mb-4 text-sm font-semibold">Modèles</h2>
@@ -278,6 +292,7 @@ export default function ConfigPage() {
                   ["relight_enabled", "Relighting activé"],
                   ["plate_enabled", "Plaque d'immatriculation"],
                   ["interior_window_whiten", "Blanchir les vitres (intérieur)"],
+                  ["purge_apres_export", "Purger les rendus après export Drive"],
                 ] as const
               ).map(([key, label]) => (
                 <label
@@ -287,7 +302,7 @@ export default function ConfigPage() {
                   <input
                     type="checkbox"
                     className="h-5 w-5 rounded border-border bg-surface-2 accent-accent"
-                    checked={options[key]}
+                    checked={!!options[key]}
                     onChange={(e) =>
                       setOptions({ ...options, [key]: e.target.checked })
                     }
@@ -370,7 +385,7 @@ export default function ConfigPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
                 label="Template dossier"
-                hint="ex. {marque} {modele} {infos}"
+                hint="variables : {client_nom} {client_prenom} {Marque} {Modèle} {infos}"
               >
                 <input
                   className={inputClass}
@@ -395,9 +410,17 @@ export default function ConfigPage() {
             </div>
           </Card>
 
-          {/* Fragments */}
+          {/* Sauvegarde des RÉGLAGES (modèles, options, paramètres, nomenclature). */}
+          <Button onClick={saveSettings} disabled={saving} className="w-full">
+            {saving ? "Enregistrement…" : "Enregistrer les réglages"}
+          </Button>
+
+          {/* Prompts (fragments) — TOUT EN BAS, sauvegarde dédiée (rarement modifiés). */}
           <Card>
-            <h2 className="mb-4 text-sm font-semibold">Fragments de prompt</h2>
+            <h2 className="mb-1 text-sm font-semibold">Prompts (fragments)</h2>
+            <p className="mb-4 text-xs text-muted">
+              Rarement modifiés — leur enregistrement est séparé des réglages.
+            </p>
             <div className="grid gap-4 lg:grid-cols-2">
               {FRAGMENT_KEYS.map((k) => (
                 <Field key={k} label={k}>
@@ -411,21 +434,14 @@ export default function ConfigPage() {
                 </Field>
               ))}
             </div>
-          </Card>
-
-          <div className="space-y-2">
-            <Button onClick={save} disabled={saving} className="w-full">
-              {saving ? "Enregistrement…" : "Enregistrer"}
+            <Button
+              onClick={savePrompts}
+              disabled={savingPrompts}
+              className="mt-4 w-full"
+            >
+              {savingPrompts ? "Enregistrement…" : "Enregistrer les prompts"}
             </Button>
-            {saved ? (
-              <p className="text-center text-sm text-emerald-400">
-                Configuration enregistrée.
-              </p>
-            ) : null}
-          </div>
-
-          {/* Bibliothèque de références */}
-          <ReferenceLibrary />
+          </Card>
         </>
       ) : null}
     </div>

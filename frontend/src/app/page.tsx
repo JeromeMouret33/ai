@@ -47,6 +47,8 @@ function Thumb({ file, onRemove }: { file: File; onRemove: () => void }) {
 }
 
 export default function GenerationPage() {
+  const [clientNom, setClientNom] = useState("");
+  const [clientPrenom, setClientPrenom] = useState("");
   const [marque, setMarque] = useState("");
   const [modele, setModele] = useState("");
   const [infos, setInfos] = useState("");
@@ -98,6 +100,7 @@ export default function GenerationPage() {
 
     // Validation des champs obligatoires -> message clair sur ce qui manque.
     const missing: string[] = [];
+    if (!clientNom.trim()) missing.push("le nom du client");
     if (!marque.trim()) missing.push("la marque");
     if (!modele.trim()) missing.push("le modèle");
     if (files.length === 0) missing.push("au moins une photo");
@@ -111,7 +114,14 @@ export default function GenerationPage() {
     setSubmitError(null);
     setSubmitting(true);
     try {
-      const res = await api.createJob(marque, modele, infos, files);
+      const res = await api.createJob(
+        marque,
+        modele,
+        infos,
+        clientNom,
+        clientPrenom,
+        files,
+      );
       setJobId(res.job_id);
       setStoredJobId(res.job_id);
       toast.success(
@@ -154,6 +164,25 @@ export default function GenerationPage() {
 
         <Card>
           <form onSubmit={submit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Client — Nom">
+                <input
+                  className={inputClass}
+                  value={clientNom}
+                  onChange={(e) => setClientNom(e.target.value)}
+                  placeholder="Dupont"
+                  required
+                />
+              </Field>
+              <Field label="Prénom">
+                <input
+                  className={inputClass}
+                  value={clientPrenom}
+                  onChange={(e) => setClientPrenom(e.target.value)}
+                  placeholder="Jean"
+                />
+              </Field>
+            </div>
             <Field label="Marque">
               <input
                 className={inputClass}

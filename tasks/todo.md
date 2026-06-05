@@ -93,21 +93,21 @@
 - [ ] Affinage du réglage fin du retry (modif d'un réglage avant relance).
 - [ ] Affinage des presets par angle (sur rendus réels).
 
-## Refonte « historique app-centré » (décidé 2026-06-04)
+## Refonte « historique app-centré » (décidé 2026-06-04) — ✅ implémentée
 Direction : app = source de vérité (navigation par client/véhicule) ; Drive = bouton « Exporter » ;
 rétention configurable (garder par défaut, option « purger après export » dans la Config).
-- [ ] Schéma : ajouter `jobs.client_nom`, `jobs.client_prenom` (+ `delivered_at`) — migration 0002.
-- [ ] Config : option `options.purge_apres_export` (false par défaut).
-- [ ] Nomenclature dossier export = `{client_nom} {client_prenom} - {Marque} {Modèle}` (client d'abord, sans `infos`).
-- [ ] Backend `GET /jobs` : liste des jobs (id, client, marque/modèle, statut, date, nb photos, exporté?), tri date desc.
-- [ ] Backend `POST /jobs` : accepter client_nom/prenom (Nom requis, Prénom optionnel) ; `DELETE /jobs/{id}` (purge app + outputs).
-- [ ] Backend deliver = « export » : si `purge_apres_export`, supprimer les rendus du bucket après envoi.
-- [ ] Front accueil : champs Client (Nom requis + Prénom).
-- [ ] Front : `JobSelector` partagé (liste lisible) remplaçant le champ ID sur QC + Galerie.
-- [ ] Front Historique : jobs de l'app (≠ Drive), **plus récent en premier**, **barre de recherche** (client / véhicule),
-      **filtre par date** + ouvrir (QC/Galerie) / Exporter / Supprimer.
-- [ ] Front Config : toggle « Purger les rendus après export ».
-- [ ] (À voir) recherche aussi dans le sélecteur du QC.
+- [x] Schéma : `jobs.client_nom`, `jobs.client_prenom`, `delivered_at` — migration `0002_history.sql` (à appliquer).
+- [x] Config : option `options.purge_apres_export` (false par défaut).
+- [x] Nomenclature dossier export = `{client_nom} {client_prenom} - {Marque} {Modèle}` (client d'abord, sans `infos`).
+- [x] Backend `GET /jobs` (liste + nb photos, tri date desc) ; `DELETE /jobs/{id}` (purge app + outputs/uploads).
+- [x] Backend `POST /jobs` : client_nom (requis) + client_prenom ; folder via client.
+- [x] Backend deliver = « export » : `delivered_at` + purge conditionnelle des rendus.
+- [x] Front accueil : champs Client (Nom requis + Prénom).
+- [x] Front : sélecteur de traitement lisible (Client · Véhicule) sur QC + Galerie (fini l'ID).
+- [x] Front Historique : jobs de l'app, plus récent d'abord, recherche (client/véhicule) + filtre date, ouvrir/supprimer.
+- [x] Front Config : toggle « Purger les rendus après export » ; sélecteur de modèles (Pro/Flash) ;
+      réorganisation (références en haut, **prompts tout en bas avec sauvegarde dédiée**).
+- [x] Coût par voiture affiché (progression + historique).
 
 ## Pistes d'optimisation des coûts (réflexion 2026-06-04, à exploiter)
 Coût ≈ 90%+ sur la GÉNÉRATION (Nano Banana Pro). Classification/QC = négligeables.
