@@ -53,9 +53,9 @@ export default function HistoryPage() {
     });
   }, [jobs, query, fromDate]);
 
-  const openIn = (path: "/qc" | "/gallery", id: string) => {
+  const open = (id: string) => {
     setStoredJobId(id);
-    router.push(path);
+    router.push("/gallery");
   };
 
   const remove = async (j: Job) => {
@@ -163,12 +163,9 @@ export default function HistoryPage() {
                 ) : null}
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              <Button variant="secondary" onClick={() => openIn("/qc", j.id)}>
-                QC
-              </Button>
-              <Button variant="secondary" onClick={() => openIn("/gallery", j.id)}>
-                Galerie
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="secondary" onClick={() => open(j.id)}>
+                Ouvrir
               </Button>
               <Button
                 variant="danger"

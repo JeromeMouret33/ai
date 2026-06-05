@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { api, type DeliverResult } from "@/lib/api";
+import { api, type DeliverResult, type Photo } from "@/lib/api";
 import {
   Badge,
   Button,
@@ -21,13 +21,28 @@ export default function GalleryPage() {
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setJobId(getStoredJobId()), []);
 
-  // Pas de polling : la galerie travaille sur des candidats stabilisés.
-  const { data, error, loading } = useJob(jobId, false);
+  // Polling : suit les régénérations en cours.
+  const { data, error, loading } = useJob(jobId, true, 3000);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [delivering, setDelivering] = useState(false);
   const [deliverError, setDeliverError] = useState<unknown>(null);
   const [result, setResult] = useState<DeliverResult | null>(null);
+  const [retrying, setRetrying] = useState<string | null>(null);
   const toast = useToast();
+
+  const regenerate = async (p: Photo) => {
+    setRetrying(p.id);
+    try {
+      await api.retryPhoto(p.id);
+      toast.success(
+        `Régénération lancée pour ${p.source_name} (depuis la photo d'origine).`,
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Échec de la régénération.");
+    } finally {
+      setRetrying(null);
+    }
+  };
 
   const photos = useMemo(() => data?.photos ?? [], [data]);
   const selectedSources = useMemo(
@@ -67,8 +82,8 @@ export default function GalleryPage() {
   return (
     <div>
       <PageTitle
-        title="Galerie de validation"
-        subtitle="Cochez les candidats à livrer sur le Drive."
+        title="Validation"
+        subtitle="Contrôle qualité + sélection. Rouge = signalé non conforme (à toi de régénérer ou de garder). Coche celles à exporter."
       />
 
       <JobPicker jobId={jobId} onChange={setJobId} />
@@ -116,18 +131,24 @@ export default function GalleryPage() {
           <div className="grid grid-cols-2 gap-3 pb-20">
             {photos.map((p) => {
               const checked = !!selected[p.id];
+              const ko = p.qc_verdict === "ko";
               return (
-                <button
+                <div
                   key={p.id}
-                  type="button"
-                  onClick={() => toggle(p.id)}
-                  className={`group overflow-hidden rounded-2xl border text-left transition-all ${
+                  className={`group overflow-hidden rounded-2xl border transition-all ${
                     checked
                       ? "border-accent ring-2 ring-accent"
-                      : "border-border hover:border-zinc-600"
+                      : ko
+                        ? "border-red-500/40"
+                        : "border-border"
                   }`}
                 >
-                  <div className="relative bg-surface-2">
+                  {/* Zone image = cochage (sélection pour export). */}
+                  <button
+                    type="button"
+                    onClick={() => toggle(p.id)}
+                    className="relative block w-full bg-surface-2 text-left"
+                  >
                     {p.candidate_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -137,9 +158,14 @@ export default function GalleryPage() {
                       />
                     ) : (
                       <div className="flex aspect-[3/2] w-full items-center justify-center text-xs text-muted">
-                        Aucun aperçu
+                        {retrying === p.id ? "Régénération…" : "Aucun aperçu"}
                       </div>
                     )}
+                    {ko ? (
+                      <span className="absolute left-2 top-2 rounded-full bg-red-600/90 px-2 py-0.5 text-[10px] font-bold text-white">
+                        non conforme
+                      </span>
+                    ) : null}
                     <span
                       className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                         checked
@@ -149,8 +175,9 @@ export default function GalleryPage() {
                     >
                       ✓
                     </span>
-                  </div>
-                  <div className="space-y-1 bg-surface p-2.5">
+                  </button>
+
+                  <div className="space-y-1.5 bg-surface p-2.5">
                     <p
                       className="truncate text-xs font-medium text-foreground"
                       title={p.source_name}
@@ -167,8 +194,23 @@ export default function GalleryPage() {
                         </Badge>
                       ) : null}
                     </div>
+                    {ko && p.qc_reasons && p.qc_reasons.length > 0 ? (
+                      <ul className="list-disc space-y-0.5 pl-4 text-[11px] text-red-300/90">
+                        {p.qc_reasons.slice(0, 3).map((r, i) => (
+                          <li key={i}>{r}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    <Button
+                      variant="secondary"
+                      className="min-h-9 w-full py-1.5 text-xs"
+                      onClick={() => regenerate(p)}
+                      disabled={retrying === p.id}
+                    >
+                      {retrying === p.id ? "Régénération…" : "Régénérer"}
+                    </Button>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>

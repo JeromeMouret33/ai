@@ -14,15 +14,6 @@ function IconGen() {
     </svg>
   );
 }
-function IconQc() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}
-      strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-      <path d="M9 12l2 2 4-4" />
-      <circle cx="12" cy="12" r="9" />
-    </svg>
-  );
-}
 function IconGallery() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}
@@ -55,8 +46,7 @@ function IconHistory() {
 
 const TABS: { href: string; label: string; icon: ReactNode }[] = [
   { href: "/", label: "Génération", icon: <IconGen /> },
-  { href: "/qc", label: "QC", icon: <IconQc /> },
-  { href: "/gallery", label: "Galerie", icon: <IconGallery /> },
+  { href: "/gallery", label: "Validation", icon: <IconGallery /> },
   { href: "/config", label: "Config", icon: <IconConfig /> },
   { href: "/history", label: "Historique", icon: <IconHistory /> },
 ];

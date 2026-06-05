@@ -316,9 +316,15 @@ def cancel_job(job_id: str) -> dict[str, str]:
 
 
 @protected.post("/api/photos/{photo_id}/retry", dependencies=[Depends(rate_limit_jobs)])
-def retry(photo_id: str) -> dict[str, Any]:
+def retry(photo_id: str, background: BackgroundTasks) -> dict[str, str]:
+    """Régénère une photo DEPUIS la source d'origine, en tâche de fond."""
     from backend.jobs import retry_photo
-    return retry_photo(photo_id)
+    from backend.storage import supabase as sb
+    # Marque « en cours » tout de suite pour l'UI (efface l'ancien verdict).
+    sb.update("photos", {"id": photo_id},
+              {"status": "pending", "qc_verdict": None, "qc_reasons": []})
+    background.add_task(retry_photo, photo_id)
+    return {"retry": photo_id}
 
 
 # --------------------------------------------------------------------------- #
