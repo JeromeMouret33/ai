@@ -98,13 +98,26 @@ Direction : app = source de vérité (navigation par client/véhicule) ; Drive =
 rétention configurable (garder par défaut, option « purger après export » dans la Config).
 - [ ] Schéma : ajouter `jobs.client_nom`, `jobs.client_prenom` (+ `delivered_at`) — migration 0002.
 - [ ] Config : option `options.purge_apres_export` (false par défaut).
-- [ ] Backend `GET /jobs` : liste des jobs (id, client, marque/modèle, statut, date, nb photos, exporté?).
-- [ ] Backend `POST /jobs` : accepter client_nom/prenom ; `DELETE /jobs/{id}` (purge app + outputs).
+- [ ] Nomenclature dossier export = `{client_nom} {client_prenom} - {Marque} {Modèle}` (client d'abord, sans `infos`).
+- [ ] Backend `GET /jobs` : liste des jobs (id, client, marque/modèle, statut, date, nb photos, exporté?), tri date desc.
+- [ ] Backend `POST /jobs` : accepter client_nom/prenom (Nom requis, Prénom optionnel) ; `DELETE /jobs/{id}` (purge app + outputs).
 - [ ] Backend deliver = « export » : si `purge_apres_export`, supprimer les rendus du bucket après envoi.
-- [ ] Front accueil : champs Client (Nom + Prénom).
+- [ ] Front accueil : champs Client (Nom requis + Prénom).
 - [ ] Front : `JobSelector` partagé (liste lisible) remplaçant le champ ID sur QC + Galerie.
-- [ ] Front Historique : lister les jobs de l'app (≠ Drive) + ouvrir (QC/Galerie) / Exporter / Supprimer.
+- [ ] Front Historique : jobs de l'app (≠ Drive), **plus récent en premier**, **barre de recherche** (client / véhicule),
+      **filtre par date** + ouvrir (QC/Galerie) / Exporter / Supprimer.
 - [ ] Front Config : toggle « Purger les rendus après export ».
+- [ ] (À voir) recherche aussi dans le sélecteur du QC.
+
+## Pistes d'optimisation des coûts (réflexion 2026-06-04, à exploiter)
+Coût ≈ 90%+ sur la GÉNÉRATION (Nano Banana Pro). Classification/QC = négligeables.
+- [ ] Rendre le coût visible : afficher €/voiture (données déjà captées : `photos.cost`, `jobs.cost_total`).
+- [ ] A/B modèle de génération : Nano Banana Pro vs Flash (≈3-5× moins cher) — réglable en Config. **Plus gros levier.**
+- [ ] Ne générer que les angles utiles : après classif (gratuite), cocher les angles à générer (15→~8).
+- [ ] Générer en 1K puis upscaler en 4K **seulement les photos gardées**.
+- [ ] Alléger les références : réduire leur résolution avant envoi ; pré-composer showroom+logo en 1 fond (4→2-3 refs).
+- [ ] Réduire les relances via calibrage des prompts/presets (Phase 4).
+- [ ] (Avancé) Génération en direct chez le provider pour éviter la marge OpenRouter.
 
 ---
 
