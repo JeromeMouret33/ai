@@ -93,6 +93,19 @@
 - [ ] Affinage du réglage fin du retry (modif d'un réglage avant relance).
 - [ ] Affinage des presets par angle (sur rendus réels).
 
+## Refonte « historique app-centré » (décidé 2026-06-04)
+Direction : app = source de vérité (navigation par client/véhicule) ; Drive = bouton « Exporter » ;
+rétention configurable (garder par défaut, option « purger après export » dans la Config).
+- [ ] Schéma : ajouter `jobs.client_nom`, `jobs.client_prenom` (+ `delivered_at`) — migration 0002.
+- [ ] Config : option `options.purge_apres_export` (false par défaut).
+- [ ] Backend `GET /jobs` : liste des jobs (id, client, marque/modèle, statut, date, nb photos, exporté?).
+- [ ] Backend `POST /jobs` : accepter client_nom/prenom ; `DELETE /jobs/{id}` (purge app + outputs).
+- [ ] Backend deliver = « export » : si `purge_apres_export`, supprimer les rendus du bucket après envoi.
+- [ ] Front accueil : champs Client (Nom + Prénom).
+- [ ] Front : `JobSelector` partagé (liste lisible) remplaçant le champ ID sur QC + Galerie.
+- [ ] Front Historique : lister les jobs de l'app (≠ Drive) + ouvrir (QC/Galerie) / Exporter / Supprimer.
+- [ ] Front Config : toggle « Purger les rendus après export ».
+
 ---
 
 ## Garde-fous de régularité
