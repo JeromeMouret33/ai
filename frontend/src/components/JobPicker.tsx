@@ -17,9 +17,11 @@ export function jobLabel(j: Job): string {
 export function JobPicker({
   jobId,
   onChange,
+  filter,
 }: {
   jobId: string;
   onChange: (id: string) => void;
+  filter?: (j: Job) => boolean;
 }) {
   const toast = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -43,9 +45,10 @@ export function JobPicker({
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return jobs
+      .filter((j) => (filter ? filter(j) : true))
       .filter((j) => !needle || jobLabel(j).toLowerCase().includes(needle))
       .slice(0, 50);
-  }, [jobs, q]);
+  }, [jobs, q, filter]);
 
   const pick = (id: string) => {
     setStoredJobId(id);

@@ -145,6 +145,7 @@ export interface Job {
   cost_total?: number; // coût cumulé OpenRouter (USD)
   created_at?: string;
   delivered_at?: string | null;
+  archived_at?: string | null; // null = encore à valider ; sinon dans Réalisations
   photo_count?: number | null; // présent dans la liste /jobs
 }
 
@@ -304,6 +305,11 @@ export const api = {
     }),
   deliverJob: (id: string, sources: string[]) =>
     request<DeliverResult>(`/jobs/${id}/deliver`, {
+      method: "POST",
+      body: JSON.stringify({ sources }),
+    }),
+  archiveJob: (id: string, sources: string[]) =>
+    request<{ archived: string }>(`/jobs/${id}/archive`, {
       method: "POST",
       body: JSON.stringify({ sources }),
     }),

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui";
 import { JobPicker } from "@/components/JobPicker";
 import { useToast } from "@/components/Toast";
-import { getStoredJobId, useJob } from "@/lib/useJob";
+import { getStoredJobId, setStoredJobId, useJob } from "@/lib/useJob";
 
 export default function GalleryPage() {
   const [jobId, setJobId] = useState("");
@@ -54,29 +54,37 @@ export default function GalleryPage() {
   const toggle = (id: string) =>
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const download = async () => {
+  const saveZip = (blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${data?.job?.drive_folder ?? "showroom"}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  // Valide : archive le job (-> Réalisations) + télécharge la sélection.
+  const downloadAndArchive = async () => {
     if (!jobId) {
-      toast.error("Aucun job sélectionné.");
+      toast.error("Aucun traitement sélectionné.");
       return;
     }
     if (selectedSources.length === 0) {
-      toast.error("Coche au moins une photo à télécharger.");
+      toast.error("Coche au moins une photo.");
       return;
     }
     setDownloading(true);
     try {
-      const blob = await api.downloadJob(jobId, selectedSources);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${data?.job?.drive_folder ?? "showroom"}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      toast.success(`Téléchargement de ${selectedSources.length} photo(s).`);
+      await api.archiveJob(jobId, selectedSources);
+      saveZip(await api.downloadJob(jobId, selectedSources));
+      toast.success("Téléchargé et archivé — disponible dans Réalisations.");
+      setStoredJobId("");
+      setJobId("");
+      setSelected({});
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Échec du téléchargement.");
+      toast.error(e instanceof Error ? e.message : "Échec.");
     } finally {
       setDownloading(false);
     }
@@ -98,8 +106,11 @@ export default function GalleryPage() {
       const r = await api.deliverJob(jobId, selectedSources);
       setResult(r);
       toast.success(
-        `Livré : ${r.uploads.length} fichier(s) dans « ${r.folder_name} ».`,
+        `Exporté Drive (${r.uploads.length}) et archivé — dans Réalisations.`,
       );
+      setStoredJobId("");
+      setJobId("");
+      setSelected({});
     } catch (e) {
       setDeliverError(e);
       toast.error(e instanceof Error ? e.message : "Échec de la livraison.");
@@ -115,7 +126,12 @@ export default function GalleryPage() {
         subtitle="Contrôle qualité + sélection. Rouge = signalé non conforme (à toi de régénérer ou de garder). Coche celles à exporter."
       />
 
-      <JobPicker jobId={jobId} onChange={setJobId} />
+      {/* Validation = jobs pas encore archivés (à valider). */}
+      <JobPicker
+        jobId={jobId}
+        onChange={setJobId}
+        filter={(j) => !j.archived_at}
+      />
 
       {loading && !data ? <Spinner /> : null}
       {error ? <ErrorBanner error={error} /> : null}
@@ -256,12 +272,12 @@ export default function GalleryPage() {
               <div className="pointer-events-auto mx-auto grid max-w-md grid-cols-2 gap-2 rounded-2xl border border-border bg-surface/95 p-2 shadow-lg shadow-black/40 backdrop-blur-md">
                 <Button
                   className="w-full"
-                  onClick={download}
+                  onClick={downloadAndArchive}
                   disabled={downloading}
                 >
                   {downloading
-                    ? "Téléchargement…"
-                    : `Télécharger (${selectedSources.length})`}
+                    ? "…"
+                    : `Télécharger et archiver (${selectedSources.length})`}
                 </Button>
                 <Button
                   variant="secondary"

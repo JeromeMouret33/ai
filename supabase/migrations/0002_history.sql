@@ -8,6 +8,10 @@ alter table public.jobs add column if not exists client_prenom text;
 -- Horodatage de l'export Drive (null = non encore exporté).
 alter table public.jobs add column if not exists delivered_at timestamptz;
 
+-- Archivage : un job validé (téléchargé/exporté) passe en « Réalisations ».
+-- null = encore « à valider » (visible dans Validation).
+alter table public.jobs add column if not exists archived_at timestamptz;
+
 -- Annulation de génération (flag lu par le traitement en tâche de fond).
 alter table public.jobs add column if not exists cancel_requested boolean not null default false;
 

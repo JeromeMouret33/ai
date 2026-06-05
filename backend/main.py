@@ -106,7 +106,7 @@ class ConfigPatch(BaseModel):
 
 
 class DeliverBody(BaseModel):
-    sources: list[str]  # noms des photos sources à livrer
+    sources: list[str] = []  # photos à traiter ; vide -> photos retenues (kept)
 
 
 # --------------------------------------------------------------------------- #
@@ -288,9 +288,10 @@ def deliver_job(job_id: str, body: DeliverBody) -> dict[str, Any]:
         file_id = drive.upload_bytes(folder_id, data, item["target_filename"])
         uploads.append({"target_filename": item["target_filename"], "drive_file_id": file_id})
 
+    now = datetime.now(timezone.utc).isoformat()
     sb.update("jobs", {"id": job_id}, {
         "status": "delivered", "drive_folder_id": folder_id,
-        "delivered_at": datetime.now(timezone.utc).isoformat(),
+        "delivered_at": now, "archived_at": now,  # export Drive = validation -> Réalisations
     })
     for src in body.sources:
         sb.update("photos", {"job_id": job_id, "source_name": src}, {"kept": True})
@@ -326,7 +327,9 @@ def download_job(job_id: str, body: DeliverBody) -> StreamingResponse:
     count = 0
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for p in rows:
-            if p["source_name"] not in selected or not p.get("candidate_path"):
+            # Sélection explicite, sinon (re-téléchargement) les photos retenues.
+            keep = p["source_name"] in selected if selected else bool(p.get("kept"))
+            if not keep or not p.get("candidate_path"):
                 continue
             data = sb.download(sb.BUCKET_OUTPUTS, p["candidate_path"])
             name = p.get("target_filename") or f"{p['source_name']}.png"
@@ -342,6 +345,18 @@ def download_job(job_id: str, body: DeliverBody) -> StreamingResponse:
         buf, media_type="application/zip",
         headers={"Content-Disposition": f'attachment; filename="{fname}"'},
     )
+
+
+@protected.post("/api/jobs/{job_id}/archive")
+def archive_job(job_id: str, body: DeliverBody) -> dict[str, str]:
+    """Valide : marque les photos retenues + archive le job (-> Réalisations)."""
+    from backend.storage import supabase as sb
+    for src in body.sources:
+        sb.update("photos", {"job_id": job_id, "source_name": src}, {"kept": True})
+    sb.update("jobs", {"id": job_id},
+              {"archived_at": datetime.now(timezone.utc).isoformat()})
+    logger.info("job %s archivé (%d photos retenues)", job_id, len(body.sources))
+    return {"archived": job_id}
 
 
 @protected.post("/api/jobs/{job_id}/cancel")

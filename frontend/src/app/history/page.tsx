@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { api, type Job } from "@/lib/api";
 import {
   Badge,
@@ -14,15 +13,14 @@ import {
 } from "@/components/ui";
 import { jobLabel } from "@/components/JobPicker";
 import { useToast } from "@/components/Toast";
-import { setStoredJobId } from "@/lib/useJob";
 
 export default function HistoryPage() {
-  const router = useRouter();
   const toast = useToast();
   const [jobs, setJobs] = useState<Job[] | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [fromDate, setFromDate] = useState("");
 
@@ -47,15 +45,31 @@ export default function HistoryPage() {
     const q = query.trim().toLowerCase();
     const from = fromDate ? new Date(fromDate) : null;
     return (jobs ?? []).filter((j) => {
+      if (!j.archived_at) return false; // Réalisations = jobs validés/archivés
       if (q && !jobLabel(j).toLowerCase().includes(q)) return false;
       if (from && j.created_at && new Date(j.created_at) < from) return false;
       return true;
     });
   }, [jobs, query, fromDate]);
 
-  const open = (id: string) => {
-    setStoredJobId(id);
-    router.push("/gallery");
+  const download = async (j: Job) => {
+    setDownloadingId(j.id);
+    try {
+      const blob = await api.downloadJob(j.id, []); // [] -> photos retenues
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${j.drive_folder ?? "showroom"}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Téléchargement lancé.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Échec du téléchargement.");
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const remove = async (j: Job) => {
@@ -121,9 +135,9 @@ export default function HistoryPage() {
       {jobs && filtered.length === 0 ? (
         <Card>
           <p className="text-sm text-muted">
-            {jobs.length === 0
-              ? "Aucun traitement pour l'instant."
-              : "Aucun résultat pour cette recherche."}
+            {query || fromDate
+              ? "Aucun résultat pour cette recherche."
+              : "Aucune réalisation. Les véhicules apparaissent ici une fois validés (Téléchargés et archivés)."}
           </p>
         </Card>
       ) : null}
@@ -166,8 +180,12 @@ export default function HistoryPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" onClick={() => open(j.id)}>
-                Ouvrir
+              <Button
+                variant="secondary"
+                disabled={downloadingId === j.id}
+                onClick={() => download(j)}
+              >
+                {downloadingId === j.id ? "…" : "Télécharger"}
               </Button>
               <Button
                 variant="danger"
