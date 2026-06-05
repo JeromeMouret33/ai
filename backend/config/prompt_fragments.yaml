@@ -9,17 +9,19 @@ role: |
   Professional automotive studio compositor.
 
 vehicle_lock: |
-  The car in the vehicle image is a fixed asset. Copy it faithfully; do not change
-  its model, trim, proportions, outline, body lines, panel gaps or paint hue. The
-  following fine-detail components are a LOCKED cutout, copied exactly from the
-  source and never redrawn, added to or removed: headlights, tail lights,
-  wheels/rims, grille, badges, emblems, lettering, mirrors, door handles.
-  LIGHT-EMITTING ELEMENTS ARE STRICTLY LOCKED: daytime running lights (DRLs),
-  headlight internals and lenses, indicators and tail lights keep their EXACT
-  original shape, internal pattern, light signature, color and glow — never
-  re-rendered, relit, brightened, recolored or restyled; their lenses are NOT to be
-  treated as "glass". Do NOT beautify, modernize, sharpen or "clean up" the car. If
-  a detail is unclear, keep it as-is — never invent or complete it.
+  The car in the vehicle image is the subject. Preserve its IDENTITY exactly: same
+  model, trim, proportions, silhouette, body lines, panel gaps and paint COLOUR
+  (hue). These fine details are copied faithfully and never redrawn, added or
+  removed: headlights, tail lights, wheels/rims, grille, badges, emblems, lettering,
+  mirrors, door handles. LIGHT-EMITTING ELEMENTS ARE STRICTLY LOCKED: daytime
+  running lights (DRLs), headlight internals and lenses, indicators and tail lights
+  keep their EXACT original shape, internal pattern, light signature, colour and
+  glow — never re-rendered, relit, brightened, recoloured or restyled; their lenses
+  are NOT treated as "glass". Do NOT change the model or the geometry, and do not
+  invent missing parts. However, capture flaws of the SOURCE PHOTO (blown-out sun
+  highlights, harsh specular glare, strong cast shadows, uneven or coloured
+  exposure) MAY be normalised to the clean studio light (see the relighting rule),
+  as long as the paint hue, geometry and every fine detail stay identical.
 
 ref_showroom: |
   SHOWROOM image (empty, clean wall, NO logo). Reproduce it EXACTLY: same white
@@ -28,10 +30,13 @@ ref_showroom: |
   redesign, relight, or move anything in the environment.
 
 ref_logo: |
-  LOGO image (GOODCAR). Place it on the upper-left wall as a subtle raised 3D relief
-  at {LOGO_POSITION_SIZE}. Reproduce it EXACTLY: same shapes, wordmark, tagline and
-  colors, correct aspect ratio. Do NOT stretch, distort, recolor, crop, duplicate
-  or restyle it. Render its text crisp and legible. Maximum logo fidelity.
+  LOGO image (GOODCAR). Reproduce the GOODCAR logo on the upper-left wall as a FLAT
+  printed/painted brand sign in its EXACT original colours — same shapes, wordmark,
+  tagline and colour fills, correct aspect ratio, crisp legible text. It is a
+  coloured graphic APPLIED on the wall, NOT a monochrome engraving or an embossed/
+  raised 3D relief: keep its real colours, do NOT tint it to the wall colour, do NOT
+  desaturate, recolour, relight, stretch, distort, crop, duplicate or restyle it.
+  Position: {LOGO_POSITION_SIZE}. Maximum logo fidelity.
 
 ref_vehicle: |
   VEHICLE image — the exact car to feature (see the locked-asset rule above).
@@ -48,15 +53,16 @@ task_base: |
   specified.
 
 relight: |
-  You MAY add subtle, photoreal showroom relighting and reflections, but ONLY on
-  the large smooth painted body panels (doors, hood, roof, fenders, bumpers) and
-  the side/rear window glass. These must read as reflections/highlights laid OVER
-  the existing surface — never a redrawing of any shape, and never a change of the
+  Relight the car to match the showroom's soft, even, slightly warm studio light.
+  On the large smooth painted body panels (doors, hood, roof, fenders, bumpers) and
+  the side/rear window glass you MAY: even out the exposure and REMOVE the source
+  photo's sun hotspots, blown highlights, harsh specular glare and strong cast
+  shadows, replacing them with clean soft studio reflections and highlights laid
+  OVER the existing surface. This must never redraw any shape and never change the
   actual paint hue.
-  ALLOWED on the car: relight + reflections on smooth panels and side/rear glass.
   FORBIDDEN: relighting or re-rendering any light-emitting element (DRLs, headlights,
-  indicators, tail lights) or treating their lenses as glass; touching wheels,
-  grille, badges, lettering or any fine detail.
+  indicators, tail lights) or treating their lenses as glass; altering wheels,
+  grille, badges, lettering, optics or any fine detail; changing the paint colour.
 
 plate: |
   Replace the vehicle's visible license plate(s) with the plate from the plate
