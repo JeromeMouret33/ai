@@ -14,7 +14,8 @@ import {
   Spinner,
 } from "@/components/ui";
 import { useToast } from "@/components/Toast";
-import { setStoredJobId, useJob } from "@/lib/useJob";
+import { jobProgress, PhaseSteps } from "@/components/PhaseSteps";
+import { getStoredJobId, setStoredJobId, useJob } from "@/lib/useJob";
 
 function statusTone(status: string): "default" | "ok" | "ko" | "warn" {
   if (["done", "complete", "completed", "delivered"].includes(status)) return "ok";
@@ -55,6 +56,13 @@ export default function GenerationPage() {
   const [jobId, setJobId] = useState("");
   const toast = useToast();
 
+  // Restaure le job en cours au montage : le suivi survit aux changements de page.
+  useEffect(() => {
+    const stored = getStoredJobId();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (stored) setJobId(stored);
+  }, []);
+
   const { data, error, loading } = useJob(jobId, true, 3000);
 
   // Vérifie qu'un showroom + un logo actifs existent (requis pour générer).
@@ -66,6 +74,12 @@ export default function GenerationPage() {
   const activeLogo = !!assets?.some((a) => a.type === "logo" && a.active);
   // assets===null : non chargé -> on ne bloque pas côté front (le backend tranchera).
   const refsMissing = assets !== null && (!activeShowroom || !activeLogo);
+
+  const progressPct = data
+    ? ["done", "delivered"].includes(data.job.status)
+      ? 100
+      : jobProgress(data.photos)
+    : 0;
 
   const addFiles = useCallback((list: FileList | null) => {
     if (!list) return;
@@ -276,29 +290,44 @@ export default function GenerationPage() {
                 ) : null}
               </div>
 
+              {/* Barre d'avancement globale, pondérée (la génération pèse le plus). */}
+              {data ? (
+                <div className="space-y-1">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
+                    <div
+                      className="h-full rounded-full bg-accent transition-all duration-700"
+                      style={{ width: `${progressPct}%` }}
+                    />
+                  </div>
+                  <p className="text-right text-xs text-muted">{progressPct}%</p>
+                </div>
+              ) : null}
+
               {error ? <ErrorBanner error={error} /> : null}
 
               <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
                 {(data?.photos ?? []).map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm"
+                    className="flex items-center justify-between gap-3 px-3 py-3"
                   >
-                    <span
-                      className="min-w-0 flex-1 truncate"
-                      title={p.source_name}
-                    >
-                      {p.source_name}
-                    </span>
-                    {p.angle ? (
-                      <span className="text-xs text-muted">{p.angle}</span>
-                    ) : null}
-                    {typeof p.confidence === "number" ? (
-                      <span className="text-xs text-zinc-500">
-                        {Math.round(p.confidence * 100)}%
-                      </span>
-                    ) : null}
-                    <Badge tone={statusTone(p.status)}>{p.status}</Badge>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="truncate text-sm"
+                        title={p.source_name}
+                      >
+                        {p.target_filename ?? p.source_name}
+                      </p>
+                      {p.angle ? (
+                        <p className="text-[11px] text-muted">
+                          {p.angle}
+                          {typeof p.confidence === "number"
+                            ? ` · ${Math.round(p.confidence * 100)}%`
+                            : ""}
+                        </p>
+                      ) : null}
+                    </div>
+                    <PhaseSteps photo={p} />
                   </div>
                 ))}
                 {data && data.photos.length === 0 ? (
