@@ -1,7 +1,9 @@
 // Service worker minimal — Showroom IA (GOODCAR).
-// Objectif : installabilité PWA. Stratégie : cache de l'app shell au install,
-// puis network-first avec repli cache pour les navigations (offline gracieux).
-const CACHE = "showroom-ia-v1";
+// Objectif : installabilité PWA + repli hors-ligne de l'app shell.
+// IMPORTANT : on n'intercepte QUE les navigations de MÊME origine. Les appels
+// API (Railway) et Supabase (autre origine) ne sont JAMAIS touchés par le SW,
+// pour ne pas masquer les erreurs réseau/CORS ni renvoyer une réponse nulle.
+const CACHE = "showroom-ia-v2";
 const SHELL = ["/"];
 
 self.addEventListener("install", (event) => {
@@ -26,20 +28,19 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  // Navigations : network-first, repli sur le cache puis l'accueil.
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
-          return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match("/"))),
-    );
-    return;
-  }
+  // On ne gère QUE les navigations de page (HTML) de même origine.
+  // Tout le reste (assets, API Railway, Supabase…) part en réseau normal,
+  // NON intercepté → pas de masquage d'erreur, pas de réponse nulle.
+  if (req.mode !== "navigate") return;
+  if (new URL(req.url).origin !== self.location.origin) return;
 
-  // Autres GET : passthrough réseau, repli cache si dispo.
-  event.respondWith(fetch(req).catch(() => caches.match(req)));
+  event.respondWith(
+    fetch(req)
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        return res;
+      })
+      .catch(() => caches.match(req).then((r) => r || caches.match("/"))),
+  );
 });
