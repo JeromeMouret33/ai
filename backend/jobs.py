@@ -30,6 +30,11 @@ logger = logging.getLogger("showroom.jobs")
 SIGNED_URL_TTL = env_int("SIGNED_URL_TTL", 7 * 24 * 3600)
 
 
+def _is_cancelled(job_id: str) -> bool:
+    rows = sb.select("jobs", {"id": job_id})
+    return bool(rows and rows[0].get("cancel_requested"))
+
+
 def _active_reference_urls() -> dict[str, str]:
     """URLs publiques des assets actifs (showroom / logo / plaque)."""
     refs: dict[str, str] = {}
@@ -111,6 +116,12 @@ def process_job(job_id: str, photos: list[dict[str, Any]]) -> None:
     classified: list[dict[str, Any]] = []
     total_cost = 0.0
     for photo in photos:
+        # Annulation demandée -> on stoppe AVANT la prochaine génération payante.
+        if _is_cancelled(job_id):
+            sb.update("jobs", {"id": job_id},
+                      {"status": "cancelled", "cost_total": total_cost})
+            logger.info("job %s : ANNULÉ (%.4f déjà dépensé)", job_id, total_cost)
+            return
         angle, c = process_one(config, options, base_refs, job_id, photo)
         total_cost += c
         if angle:
@@ -121,8 +132,9 @@ def process_job(job_id: str, photos: list[dict[str, Any]]) -> None:
     for c, name in zip(classified, _target_names(job, angles, nomen)):
         sb.update("photos", {"id": c["photo_id"]}, {"target_filename": name})
 
-    sb.update("jobs", {"id": job_id}, {"status": "done", "cost_total": total_cost})
-    logger.info("job %s : terminé, coût total=%.4f", job_id, total_cost)
+    final = "cancelled" if _is_cancelled(job_id) else "done"
+    sb.update("jobs", {"id": job_id}, {"status": final, "cost_total": total_cost})
+    logger.info("job %s : %s, coût total=%.4f", job_id, final, total_cost)
 
 
 def retry_photo(photo_id: str) -> dict[str, Any]:

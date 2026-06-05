@@ -276,6 +276,10 @@ export const api = {
   getJob: (id: string) => request<JobDetail>(`/jobs/${id}`),
   deleteJob: (id: string) =>
     request<{ deleted: string }>(`/jobs/${id}`, { method: "DELETE" }),
+  cancelJob: (id: string) =>
+    request<{ cancel_requested: string }>(`/jobs/${id}/cancel`, {
+      method: "POST",
+    }),
   deliverJob: (id: string, sources: string[]) =>
     request<DeliverResult>(`/jobs/${id}/deliver`, {
       method: "POST",

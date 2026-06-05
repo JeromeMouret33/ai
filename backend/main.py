@@ -306,6 +306,15 @@ def deliver_job(job_id: str, body: DeliverBody) -> dict[str, Any]:
     return {"folder_name": jobs[0]["drive_folder"], "folder_id": folder_id, "uploads": uploads}
 
 
+@protected.post("/api/jobs/{job_id}/cancel")
+def cancel_job(job_id: str) -> dict[str, str]:
+    """Demande l'annulation : le traitement stoppe avant la prochaine photo."""
+    from backend.storage import supabase as sb
+    sb.update("jobs", {"id": job_id}, {"cancel_requested": True})
+    logger.info("annulation demandée pour le job %s", job_id)
+    return {"cancel_requested": job_id}
+
+
 @protected.post("/api/photos/{photo_id}/retry", dependencies=[Depends(rate_limit_jobs)])
 def retry(photo_id: str) -> dict[str, Any]:
     from backend.jobs import retry_photo

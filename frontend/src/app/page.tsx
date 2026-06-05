@@ -54,6 +54,7 @@ export default function GenerationPage() {
   const [infos, setInfos] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [jobId, setJobId] = useState("");
   const toast = useToast();
@@ -82,6 +83,26 @@ export default function GenerationPage() {
       ? 100
       : jobProgress(data.photos)
     : 0;
+
+  // Job en cours (non terminal) -> on peut l'annuler.
+  const running =
+    !!data &&
+    !["done", "delivered", "error", "cancelled"].includes(data.job.status);
+
+  const cancel = async () => {
+    if (!jobId) return;
+    setCancelling(true);
+    try {
+      await api.cancelJob(jobId);
+      toast.success(
+        "Annulation demandée — les photos restantes ne seront pas générées.",
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Échec de l'annulation.");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const addFiles = useCallback((list: FileList | null) => {
     if (!list) return;
@@ -375,17 +396,16 @@ export default function GenerationPage() {
                 ) : null}
               </div>
 
-              <div className="flex flex-wrap gap-4 pt-1 text-sm">
-                <Link className="text-accent underline-offset-4 hover:underline" href="/qc">
-                  Aller au QC
-                </Link>
-                <Link
-                  className="text-accent underline-offset-4 hover:underline"
-                  href="/gallery"
+              {running ? (
+                <Button
+                  variant="danger"
+                  className="w-full"
+                  onClick={cancel}
+                  disabled={cancelling}
                 >
-                  Galerie de validation
-                </Link>
-              </div>
+                  {cancelling ? "Annulation…" : "Annuler la génération"}
+                </Button>
+              ) : null}
             </div>
           )}
         </Card>
