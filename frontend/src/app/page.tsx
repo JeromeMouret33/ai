@@ -14,8 +14,11 @@ import {
   Spinner,
 } from "@/components/ui";
 import { useToast } from "@/components/Toast";
-import { jobProgress, PhaseSteps } from "@/components/PhaseSteps";
+import { jobProgress, photoProgress, PhaseSteps } from "@/components/PhaseSteps";
 import { getStoredJobId, setStoredJobId, useJob } from "@/lib/useJob";
+
+// Coût OpenRouter en USD -> estimation EUR (indicative).
+const EUR_PER_USD = 0.92;
 
 function statusTone(status: string): "default" | "ok" | "ko" | "warn" {
   if (["done", "complete", "completed", "delivered"].includes(status)) return "ok";
@@ -90,6 +93,9 @@ export default function GenerationPage() {
     !!data &&
     !["done", "delivered", "error", "cancelled"].includes(data.job.status);
   const cancelPending = askedCancel || !!data?.job?.cancel_requested;
+  const generatedCount = (data?.photos ?? []).filter(
+    (p) => !!p.candidate_url,
+  ).length;
 
   const cancel = async () => {
     if (!jobId) return;
@@ -333,22 +339,14 @@ export default function GenerationPage() {
           ) : (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="font-mono text-xs text-muted">{jobId}</span>
                 {data?.job ? (
                   <Badge tone={statusTone(data.job.status)}>
                     {data.job.status}
                   </Badge>
                 ) : null}
                 {data?.job?.drive_folder ? (
-                  <span className="text-muted">→ {data.job.drive_folder}</span>
-                ) : null}
-                {typeof data?.job?.cost_total === "number" &&
-                data.job.cost_total > 0 ? (
-                  <span
-                    className="ml-auto rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted"
-                    title="Coût cumulé OpenRouter (USD)"
-                  >
-                    ≈ ${data.job.cost_total.toFixed(3)}
+                  <span className="font-medium text-foreground">
+                    {data.job.drive_folder}
                   </span>
                 ) : null}
               </div>
@@ -381,14 +379,10 @@ export default function GenerationPage() {
                       >
                         {p.target_filename ?? p.source_name}
                       </p>
-                      {p.angle ? (
-                        <p className="text-[11px] text-muted">
-                          {p.angle}
-                          {typeof p.confidence === "number"
-                            ? ` · ${Math.round(p.confidence * 100)}%`
-                            : ""}
-                        </p>
-                      ) : null}
+                      <p className="text-[11px] text-muted">
+                        {p.angle ? `${p.angle} · ` : ""}
+                        {photoProgress(p)}%
+                      </p>
                     </div>
                     <PhaseSteps photo={p} />
                   </div>
@@ -399,6 +393,17 @@ export default function GenerationPage() {
                   </p>
                 ) : null}
               </div>
+
+              {typeof data?.job?.cost_total === "number" &&
+              data.job.cost_total > 0 &&
+              generatedCount > 0 ? (
+                <p className="text-xs text-muted">
+                  La génération de {generatedCount} image
+                  {generatedCount > 1 ? "s" : ""} a coûté ≈{" "}
+                  {(data.job.cost_total * EUR_PER_USD).toFixed(2)} € (à titre
+                  indicatif).
+                </p>
+              ) : null}
 
               {running ? (
                 cancelPending ? (

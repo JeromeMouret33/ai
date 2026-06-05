@@ -69,6 +69,21 @@ export function jobProgress(photos: Photo[]): number {
   return Math.round((done / total) * 100);
 }
 
+/** Avancement d'UNE photo (0..100), pondéré : Vue 15 / Génération 65 / QC 20. */
+export function photoProgress(p: Photo): number {
+  const weights: Record<Phase["key"], number> = { classif: 15, gen: 65, qc: 20 };
+  let pct = 0;
+  for (const ph of photoPhases(p)) {
+    const w = weights[ph.key];
+    if (ph.state === "done" || ph.state === "warn" || ph.state === "failed") {
+      pct += w;
+    } else if (ph.state === "active") {
+      pct += w * 0.5;
+    }
+  }
+  return Math.round(pct);
+}
+
 const DOT: Record<PhaseState, { cls: string; icon: string }> = {
   pending: { cls: "bg-surface-2 text-zinc-500", icon: "•" },
   active: { cls: "bg-accent/20 text-accent animate-pulse", icon: "•" },
