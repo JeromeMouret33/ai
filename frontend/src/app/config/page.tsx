@@ -44,6 +44,68 @@ const FRAGMENT_KEYS = [
 
 const ASSET_TYPES: AssetType[] = ["showroom", "logo", "plate"];
 
+// Modèles proposés en menu déroulant (slugs OpenRouter). « Personnalisé » = saisie libre.
+const GEN_MODELS = [
+  {
+    value: "google/gemini-3-pro-image-preview",
+    label: "Nano Banana Pro — Gemini 3 Pro Image (qualité max, cher)",
+  },
+  {
+    value: "google/gemini-2.5-flash-image-preview",
+    label: "Nano Banana — Gemini 2.5 Flash Image (moins cher)",
+  },
+];
+const VISION_MODELS = [
+  { value: "openai/gpt-4o-mini", label: "GPT-4o mini (rapide, pas cher)" },
+  { value: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash (pas cher)" },
+  { value: "openai/gpt-4o", label: "GPT-4o (plus précis, plus cher)" },
+];
+
+function ModelSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const known = options.some((o) => o.value === value);
+  const [custom, setCustom] = useState(!known && value !== "");
+
+  return (
+    <div className="space-y-2">
+      <select
+        className={inputClass}
+        value={custom ? "__custom__" : value}
+        onChange={(e) => {
+          if (e.target.value === "__custom__") {
+            setCustom(true);
+          } else {
+            setCustom(false);
+            onChange(e.target.value);
+          }
+        }}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+        <option value="__custom__">Personnalisé…</option>
+      </select>
+      {custom ? (
+        <input
+          className={inputClass}
+          placeholder="slug OpenRouter (ex. google/…)"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 export default function ConfigPage() {
   const [config, setConfig] = useState<Config | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -184,28 +246,24 @@ export default function ConfigPage() {
             <h2 className="mb-4 text-sm font-semibold">Modèles</h2>
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Classification">
-                <input
-                  className={inputClass}
+                <ModelSelect
                   value={models.classification}
-                  onChange={(e) =>
-                    setModels({ ...models, classification: e.target.value })
-                  }
+                  onChange={(v) => setModels({ ...models, classification: v })}
+                  options={VISION_MODELS}
                 />
               </Field>
               <Field label="Génération">
-                <input
-                  className={inputClass}
+                <ModelSelect
                   value={models.generation}
-                  onChange={(e) =>
-                    setModels({ ...models, generation: e.target.value })
-                  }
+                  onChange={(v) => setModels({ ...models, generation: v })}
+                  options={GEN_MODELS}
                 />
               </Field>
               <Field label="QC">
-                <input
-                  className={inputClass}
+                <ModelSelect
                   value={models.qc}
-                  onChange={(e) => setModels({ ...models, qc: e.target.value })}
+                  onChange={(v) => setModels({ ...models, qc: v })}
+                  options={VISION_MODELS}
                 />
               </Field>
             </div>

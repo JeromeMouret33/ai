@@ -288,6 +288,15 @@ export default function GenerationPage() {
                 {data?.job?.drive_folder ? (
                   <span className="text-muted">→ {data.job.drive_folder}</span>
                 ) : null}
+                {typeof data?.job?.cost_total === "number" &&
+                data.job.cost_total > 0 ? (
+                  <span
+                    className="ml-auto rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted"
+                    title="Coût cumulé OpenRouter (USD)"
+                  >
+                    ≈ ${data.job.cost_total.toFixed(3)}
+                  </span>
+                ) : null}
               </div>
 
               {/* Barre d'avancement globale, pondérée (la génération pèse le plus). */}

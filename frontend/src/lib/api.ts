@@ -137,6 +137,7 @@ export interface Job {
   infos: string;
   drive_folder: string;
   status: string;
+  cost_total?: number; // coût cumulé OpenRouter (USD)
 }
 
 export interface JobDetail {
