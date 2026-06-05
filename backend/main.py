@@ -32,6 +32,7 @@ from fastapi import (
     APIRouter, BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, Request, UploadFile,
 )
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from backend.auth import get_current_user
@@ -304,6 +305,43 @@ def deliver_job(job_id: str, body: DeliverBody) -> dict[str, Any]:
 
     logger.info("job %s exporté : %d fichiers -> dossier %s", job_id, len(uploads), folder_id)
     return {"folder_name": jobs[0]["drive_folder"], "folder_id": folder_id, "uploads": uploads}
+
+
+@protected.post("/api/jobs/{job_id}/download")
+def download_job(job_id: str, body: DeliverBody) -> StreamingResponse:
+    """Télécharge les photos cochées (renommées) dans un seul .zip."""
+    import io
+    import zipfile
+
+    from backend.pipeline import naming
+    from backend.storage import supabase as sb
+
+    jobs = sb.select("jobs", {"id": job_id})
+    if not jobs:
+        raise HTTPException(404, "job introuvable")
+    rows = sb.select("photos", {"job_id": job_id})
+    selected = set(body.sources)
+
+    buf = io.BytesIO()
+    count = 0
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for p in rows:
+            if p["source_name"] not in selected or not p.get("candidate_path"):
+                continue
+            data = sb.download(sb.BUCKET_OUTPUTS, p["candidate_path"])
+            name = p.get("target_filename") or f"{p['source_name']}.png"
+            zf.writestr(name, data)
+            count += 1
+    if count == 0:
+        raise HTTPException(400, "Aucune photo sélectionnée avec un rendu disponible.")
+
+    buf.seek(0)
+    fname = f"{naming.safe_filename(jobs[0].get('drive_folder') or 'showroom')}.zip"
+    logger.info("job %s : téléchargement zip de %d photo(s)", job_id, count)
+    return StreamingResponse(
+        buf, media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
+    )
 
 
 @protected.post("/api/jobs/{job_id}/cancel")

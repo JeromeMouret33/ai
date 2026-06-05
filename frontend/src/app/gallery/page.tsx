@@ -28,6 +28,7 @@ export default function GalleryPage() {
   const [deliverError, setDeliverError] = useState<unknown>(null);
   const [result, setResult] = useState<DeliverResult | null>(null);
   const [retrying, setRetrying] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
   const toast = useToast();
 
   const regenerate = async (p: Photo) => {
@@ -52,6 +53,34 @@ export default function GalleryPage() {
 
   const toggle = (id: string) =>
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const download = async () => {
+    if (!jobId) {
+      toast.error("Aucun job sélectionné.");
+      return;
+    }
+    if (selectedSources.length === 0) {
+      toast.error("Coche au moins une photo à télécharger.");
+      return;
+    }
+    setDownloading(true);
+    try {
+      const blob = await api.downloadJob(jobId, selectedSources);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${data?.job?.drive_folder ?? "showroom"}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success(`Téléchargement de ${selectedSources.length} photo(s).`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Échec du téléchargement.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const deliver = async () => {
     if (!jobId) {
@@ -224,15 +253,23 @@ export default function GalleryPage() {
           {/* Barre de livraison fixe, pleine largeur, au-dessus de la tab bar. */}
           {photos.length > 0 ? (
             <div className="pointer-events-none fixed inset-x-0 bottom-[72px] z-40 px-4">
-              <div className="pointer-events-auto mx-auto max-w-md rounded-2xl border border-border bg-surface/95 p-2 shadow-lg shadow-black/40 backdrop-blur-md">
+              <div className="pointer-events-auto mx-auto grid max-w-md grid-cols-2 gap-2 rounded-2xl border border-border bg-surface/95 p-2 shadow-lg shadow-black/40 backdrop-blur-md">
                 <Button
+                  className="w-full"
+                  onClick={download}
+                  disabled={downloading}
+                >
+                  {downloading
+                    ? "Téléchargement…"
+                    : `Télécharger (${selectedSources.length})`}
+                </Button>
+                <Button
+                  variant="secondary"
                   className="w-full"
                   onClick={deliver}
                   disabled={delivering}
                 >
-                  {delivering
-                    ? "Livraison…"
-                    : `Livrer la sélection (${selectedSources.length})`}
+                  {delivering ? "Drive…" : `Drive (${selectedSources.length})`}
                 </Button>
               </div>
             </div>

@@ -275,6 +275,27 @@ export const api = {
     return request<CreateJobResult>("/jobs", { method: "POST", body: fd });
   },
   getJob: (id: string) => request<JobDetail>(`/jobs/${id}`),
+  downloadJob: async (id: string, sources: string[]): Promise<Blob> => {
+    const token = await getAccessToken();
+    const res = await fetch(`${API_BASE}/api/jobs/${id}/download`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ sources }),
+    });
+    if (!res.ok) {
+      let detail = res.statusText;
+      try {
+        detail = (await res.json()).detail ?? detail;
+      } catch {
+        /* corps non-JSON */
+      }
+      throw new ApiError(detail, res.status);
+    }
+    return res.blob();
+  },
   deleteJob: (id: string) =>
     request<{ deleted: string }>(`/jobs/${id}`, { method: "DELETE" }),
   cancelJob: (id: string) =>
