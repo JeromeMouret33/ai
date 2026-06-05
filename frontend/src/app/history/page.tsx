@@ -81,8 +81,8 @@ export default function HistoryPage() {
   return (
     <div>
       <PageTitle
-        title="Historique"
-        subtitle="Tous les traitements de l'application (plus récent en premier)."
+        title="Réalisations"
+        subtitle="Tous les véhicules traités (plus récent en premier)."
       />
 
       {/* Recherche + filtre date */}

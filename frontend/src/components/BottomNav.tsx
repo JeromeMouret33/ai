@@ -44,38 +44,48 @@ function IconHistory() {
   );
 }
 
-const TABS: { href: string; label: string; icon: ReactNode }[] = [
+type Tab = { href: string; label: string; icon: ReactNode };
+
+// Parcours : Générer -> Valider -> retrouver ses Réalisations.
+const JOURNEY: Tab[] = [
   { href: "/", label: "Génération", icon: <IconGen /> },
   { href: "/gallery", label: "Validation", icon: <IconGallery /> },
-  { href: "/config", label: "Config", icon: <IconConfig /> },
-  { href: "/history", label: "Historique", icon: <IconHistory /> },
+  { href: "/history", label: "Réalisations", icon: <IconHistory /> },
 ];
+// La Config est un outil à part -> isolée tout à droite.
+const CONFIG: Tab = { href: "/config", label: "Config", icon: <IconConfig /> };
 
 export function BottomNav() {
   const pathname = usePathname();
+
+  const renderTab = (t: Tab) => {
+    const active =
+      t.href === "/" ? pathname === "/" : pathname.startsWith(t.href);
+    return (
+      <Link
+        key={t.href}
+        href={t.href}
+        aria-current={active ? "page" : undefined}
+        className={`flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors ${
+          active ? "text-accent" : "text-muted hover:text-foreground"
+        }`}
+      >
+        <span aria-hidden>{t.icon}</span>
+        <span className="leading-none">{t.label}</span>
+      </Link>
+    );
+  };
+
   return (
     <nav
       className="pb-safe fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface/95 backdrop-blur-md"
       aria-label="Navigation principale"
     >
-      <div className="mx-auto flex max-w-md items-stretch justify-around px-1">
-        {TABS.map((t) => {
-          const active =
-            t.href === "/" ? pathname === "/" : pathname.startsWith(t.href);
-          return (
-            <Link
-              key={t.href}
-              href={t.href}
-              aria-current={active ? "page" : undefined}
-              className={`flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors ${
-                active ? "text-accent" : "text-muted hover:text-foreground"
-              }`}
-            >
-              <span aria-hidden>{t.icon}</span>
-              <span className="leading-none">{t.label}</span>
-            </Link>
-          );
-        })}
+      <div className="mx-auto flex max-w-md items-stretch px-1">
+        {JOURNEY.map(renderTab)}
+        {/* Séparateur : la Config est détachée du parcours. */}
+        <span className="my-3 w-px self-center bg-border" aria-hidden />
+        {renderTab(CONFIG)}
       </div>
     </nav>
   );
