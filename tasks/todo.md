@@ -47,9 +47,8 @@
 - [x] Tests unitaires des parties pures (naming, prompt_builder, loader, parsing OpenRouter) — 19 tests verts.
 - [x] Modèles choisis : classification + qc = `openai/gpt-4o-mini` (dans `params.yaml`, éditables dans l'app).
 - [x] Nomenclature pilotée par la config (templates `dossier`/`fichier` + `toujours_numerotes` lus par `naming.py`).
-- [ ] **Test end-to-end sur ~30 photos** — BLOQUÉ dans l'env web : politique réseau interdit `openrouter.ai`
-      (403 "Host not in allowlist"). À lancer en local OU dans un env dont l'allowlist autorise openrouter.ai.
-      Nécessite aussi de vraies photos + assets (showroom/logo/plaque), pas encore fournis.
+- [x] **Test end-to-end validé EN PRODUCTION** (2026-06-04) : classification + génération (Nano Banana Pro)
+      + QC fonctionnent sur de vraies photos via le front déployé. 🎉
 - [x] Bug corrigé : en-têtes HTTP assainis en ASCII (`_ascii_header`) — voir lessons.md.
 
 ## Phase 2 — Stockage, nommage, livraison
@@ -61,7 +60,8 @@
 - [x] Livraison Google Drive (`storage/drive.py`) : `create_vehicle_folder` + `upload_file` + `delete_folder` + `list_history`.
 - [x] Orchestration livraison (`storage/delivery.py`) : manifest + sélection → dossier + upload (mode `--dry-run`).
 - [x] Tests parties pures stockage (URLs/headers Supabase, métadonnées Drive, plan de livraison) — total 25 tests verts.
-- [ ] **Vérif live (Supabase + Drive)** — bloquée réseau (env web) ; à faire en local/env ouvert avec `SUPABASE_*` + `GOOGLE_*`.
+- [x] **Supabase validé en prod** (auth, buckets, jobs/photos, assets actifs). 
+- [ ] **Livraison Drive** — reste à valider en prod : nécessite les `GOOGLE_*` (OAuth Drive + dossier parent).
 
 ## Phase 3 — Interface web (génération, validation, config, historique)
 - [x] Scaffolding Next.js 16 (App Router, TS strict, Tailwind v4) + client API typé `frontend/src/lib/api.ts`.
