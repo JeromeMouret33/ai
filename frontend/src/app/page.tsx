@@ -57,7 +57,11 @@ export default function GenerationPage() {
 
   const addFiles = useCallback((list: FileList | null) => {
     if (!list) return;
-    setFiles((prev) => [...prev, ...Array.from(list)]);
+    // Snapshot SYNCHRONE : l'input est vidé (value="") juste après l'appel ;
+    // il faut donc convertir la FileList maintenant, pas dans le setState (async).
+    const picked = Array.from(list);
+    if (picked.length === 0) return;
+    setFiles((prev) => [...prev, ...picked]);
   }, []);
 
   const removeFile = (idx: number) =>
