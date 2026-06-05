@@ -11,6 +11,7 @@ import {
   Spinner,
 } from "@/components/ui";
 import { JobPicker } from "@/components/JobPicker";
+import { useToast } from "@/components/Toast";
 import { getStoredJobId, useJob } from "@/lib/useJob";
 
 export default function QcPage() {
@@ -23,6 +24,7 @@ export default function QcPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<unknown>(null);
   const [kept, setKept] = useState<Record<string, boolean>>({});
+  const toast = useToast();
 
   const flagged = (data?.photos ?? []).filter((p) => p.qc_verdict === "ko");
 
@@ -32,8 +34,10 @@ export default function QcPage() {
     try {
       await api.retryPhoto(p.id);
       await refresh();
+      toast.success(`Relance lancée pour ${p.source_name}.`);
     } catch (e) {
       setActionError(e);
+      toast.error(e instanceof Error ? e.message : "Échec de la relance.");
     } finally {
       setBusy(null);
     }

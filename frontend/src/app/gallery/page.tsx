@@ -12,6 +12,7 @@ import {
   SuccessBanner,
 } from "@/components/ui";
 import { JobPicker } from "@/components/JobPicker";
+import { useToast } from "@/components/Toast";
 import { getStoredJobId, useJob } from "@/lib/useJob";
 
 export default function GalleryPage() {
@@ -26,6 +27,7 @@ export default function GalleryPage() {
   const [delivering, setDelivering] = useState(false);
   const [deliverError, setDeliverError] = useState<unknown>(null);
   const [result, setResult] = useState<DeliverResult | null>(null);
+  const toast = useToast();
 
   const photos = useMemo(() => data?.photos ?? [], [data]);
   const selectedSources = useMemo(
@@ -37,14 +39,26 @@ export default function GalleryPage() {
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const deliver = async () => {
-    if (!jobId || selectedSources.length === 0) return;
+    if (!jobId) {
+      toast.error("Aucun job sélectionné.");
+      return;
+    }
+    if (selectedSources.length === 0) {
+      toast.error("Coche au moins une photo à livrer.");
+      return;
+    }
     setDelivering(true);
     setDeliverError(null);
     setResult(null);
     try {
-      setResult(await api.deliverJob(jobId, selectedSources));
+      const r = await api.deliverJob(jobId, selectedSources);
+      setResult(r);
+      toast.success(
+        `Livré : ${r.uploads.length} fichier(s) dans « ${r.folder_name} ».`,
+      );
     } catch (e) {
       setDeliverError(e);
+      toast.error(e instanceof Error ? e.message : "Échec de la livraison.");
     } finally {
       setDelivering(false);
     }
@@ -172,7 +186,7 @@ export default function GalleryPage() {
                 <Button
                   className="w-full"
                   onClick={deliver}
-                  disabled={delivering || selectedSources.length === 0}
+                  disabled={delivering}
                 >
                   {delivering
                     ? "Livraison…"

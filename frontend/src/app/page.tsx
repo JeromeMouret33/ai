@@ -13,6 +13,7 @@ import {
   PageTitle,
   Spinner,
 } from "@/components/ui";
+import { useToast } from "@/components/Toast";
 import { setStoredJobId, useJob } from "@/lib/useJob";
 
 function statusTone(status: string): "default" | "ok" | "ko" | "warn" {
@@ -52,6 +53,7 @@ export default function GenerationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [jobId, setJobId] = useState("");
+  const toast = useToast();
 
   const { data, error, loading } = useJob(jobId, true, 3000);
 
@@ -79,25 +81,37 @@ export default function GenerationPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation des champs obligatoires -> message clair sur ce qui manque.
+    const missing: string[] = [];
+    if (!marque.trim()) missing.push("la marque");
+    if (!modele.trim()) missing.push("le modèle");
+    if (files.length === 0) missing.push("au moins une photo");
+    if (assets !== null && !activeShowroom) missing.push("un showroom actif");
+    if (assets !== null && !activeLogo) missing.push("un logo actif");
+    if (missing.length > 0) {
+      toast.error(`Il manque ${missing.join(", ")}.`);
+      return;
+    }
+
     setSubmitError(null);
     setSubmitting(true);
     try {
       const res = await api.createJob(marque, modele, infos, files);
       setJobId(res.job_id);
       setStoredJobId(res.job_id);
+      toast.success(
+        `Génération lancée (${files.length} photo${files.length > 1 ? "s" : ""}).`,
+      );
     } catch (err) {
       setSubmitError(err);
+      toast.error(err instanceof Error ? err.message : "Échec du lancement.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const canSubmit =
-    marque.trim() &&
-    modele.trim() &&
-    files.length > 0 &&
-    !submitting &&
-    !refsMissing;
+  const canSubmit = !submitting;
 
   return (
     <div>

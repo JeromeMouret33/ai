@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { BottomNav } from "@/components/BottomNav";
+import { ToastProvider } from "@/components/Toast";
 import { Spinner } from "@/components/ui";
 import {
   authEnabled,
@@ -90,13 +91,18 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  let content: ReactNode;
   if (status === "loading") {
-    return (
+    content = (
       <div className="flex min-h-screen items-center justify-center">
         <Spinner label="Connexion…" />
       </div>
     );
+  } else if (status === "anon") {
+    content = <Login />;
+  } else {
+    content = <Shell>{children}</Shell>;
   }
-  if (status === "anon") return <Login />;
-  return <Shell>{children}</Shell>;
+
+  return <ToastProvider>{content}</ToastProvider>;
 }

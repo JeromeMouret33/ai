@@ -22,6 +22,7 @@ import {
   PageTitle,
   Spinner,
 } from "@/components/ui";
+import { useToast } from "@/components/Toast";
 
 // Fragments textuels éditables (on exclut angle_presets, objet structuré).
 const FRAGMENT_KEYS = [
@@ -78,6 +79,7 @@ export default function ConfigPage() {
     drive_parent_folder: "",
   });
   const [nomenclature, setNomenclature] = useState({ dossier: "", fichier: "" });
+  const toast = useToast();
 
   const hydrate = useCallback((cfg: Config) => {
     setConfig(cfg);
@@ -148,8 +150,10 @@ export default function ConfigPage() {
       };
       hydrate(await api.putConfig(patch));
       setSaved(true);
+      toast.success("Configuration enregistrée.");
     } catch (e) {
       setError(e);
+      toast.error(e instanceof Error ? e.message : "Échec de l'enregistrement.");
     } finally {
       setSaving(false);
     }
@@ -494,20 +498,29 @@ function UploadForm({
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const toast = useToast();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file) {
+      toast.error(`Choisis une image pour le ${type}.`);
+      return;
+    }
+    if (!name.trim()) {
+      toast.error("Donne un nom à cet asset.");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      // Nom optionnel : par défaut le nom du fichier.
-      await api.uploadAsset(type, name.trim() || file.name, file);
+      await api.uploadAsset(type, name.trim(), file);
       setName("");
       setFile(null);
       onUploaded();
+      toast.success(`Asset « ${type} » ajouté.`);
     } catch (err) {
       setError(err);
+      toast.error(err instanceof Error ? err.message : "Échec de l'upload.");
     } finally {
       setBusy(false);
     }
@@ -523,7 +536,7 @@ function UploadForm({
       </p>
       <input
         className={inputClass}
-        placeholder="Nom (optionnel)"
+        placeholder="Nom"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
@@ -538,7 +551,7 @@ function UploadForm({
         type="submit"
         variant="secondary"
         className="w-full"
-        disabled={busy || !file}
+        disabled={busy}
       >
         {busy ? "Upload…" : "Uploader"}
       </Button>
