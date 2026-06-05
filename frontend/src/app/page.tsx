@@ -55,6 +55,7 @@ export default function GenerationPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [askedCancel, setAskedCancel] = useState(false);
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [jobId, setJobId] = useState("");
   const toast = useToast();
@@ -88,12 +89,14 @@ export default function GenerationPage() {
   const running =
     !!data &&
     !["done", "delivered", "error", "cancelled"].includes(data.job.status);
+  const cancelPending = askedCancel || !!data?.job?.cancel_requested;
 
   const cancel = async () => {
     if (!jobId) return;
     setCancelling(true);
     try {
       await api.cancelJob(jobId);
+      setAskedCancel(true);
       toast.success(
         "Annulation demandée — les photos restantes ne seront pas générées.",
       );
@@ -134,6 +137,7 @@ export default function GenerationPage() {
 
     setSubmitError(null);
     setSubmitting(true);
+    setAskedCancel(false);
     try {
       const res = await api.createJob(
         marque,
@@ -397,14 +401,20 @@ export default function GenerationPage() {
               </div>
 
               {running ? (
-                <Button
-                  variant="danger"
-                  className="w-full"
-                  onClick={cancel}
-                  disabled={cancelling}
-                >
-                  {cancelling ? "Annulation…" : "Annuler la génération"}
-                </Button>
+                cancelPending ? (
+                  <p className="text-center text-sm text-amber-300">
+                    Annulation en cours… (la photo en cours se termine)
+                  </p>
+                ) : (
+                  <Button
+                    variant="danger"
+                    className="w-full"
+                    onClick={cancel}
+                    disabled={cancelling}
+                  >
+                    {cancelling ? "Annulation…" : "Annuler la génération"}
+                  </Button>
+                )
               ) : null}
             </div>
           )}

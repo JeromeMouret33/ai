@@ -149,14 +149,16 @@ export default function HistoryPage() {
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <Badge
                   tone={
-                    j.status === "delivered"
+                    j.status === "delivered" || j.status === "done"
                       ? "ok"
                       : j.status === "error"
                         ? "ko"
-                        : "default"
+                        : j.status === "cancelled"
+                          ? "warn"
+                          : "default"
                   }
                 >
-                  {j.status}
+                  {j.status === "cancelled" ? "annulé" : j.status}
                 </Badge>
                 {j.delivered_at ? (
                   <span className="text-[10px] text-emerald-400">exporté ✓</span>
