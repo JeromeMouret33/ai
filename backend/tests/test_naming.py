@@ -17,6 +17,22 @@ def test_file_name_with_and_without_index():
     assert naming.file_name("Peugeot", "208", "profil-gauche", 2) == "peugeot-208_profil-gauche-02.jpg"
 
 
+def test_folder_name_client_template():
+    tpl = "{client_nom} {client_prenom} - {Marque} {Modèle}"
+    assert (
+        naming.folder_name("Peugeot", "208", "GT-Line", template=tpl,
+                           client_nom="Dupont", client_prenom="Jean")
+        == "Dupont Jean - Peugeot 208"
+    )
+    # Prénom vide -> pas de double espace, tiret conservé (interne).
+    assert (
+        naming.folder_name("Peugeot", "208", template=tpl, client_nom="Dupont")
+        == "Dupont - Peugeot 208"
+    )
+    # Client vide -> tiret de tête retiré.
+    assert naming.folder_name("Peugeot", "208", template=tpl) == "Peugeot 208"
+
+
 def test_config_driven_templates():
     # Template de fichier personnalisé + jeu d'angles toujours numérotés custom.
     names = naming.assign_names(

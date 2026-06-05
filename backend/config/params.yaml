@@ -15,7 +15,7 @@ parametres:
   drive_parent_folder: ""    # TODO: id ou chemin du dossier Drive parent
 
 nomenclature:                  # éditable dans l'app — lue par pipeline/naming.py
-  dossier: "{Marque} {Modèle} {infos}"     # {Marque}/{Modèle}/{infos} = valeurs saisies (casse conservée)
+  dossier: "{client_nom} {client_prenom} - {Marque} {Modèle}"  # client d'abord, puis véhicule
   fichier: "{marque}-{modele}_{angle}.jpg" # {marque}/{modele} = slugs ; {angle} = slug d'angle
   angles: [face-avant, 3-4-avant-gauche, 3-4-avant-droit, profil-gauche,
            profil-droit, 3-4-arriere-gauche, 3-4-arriere-droit, arriere,
@@ -27,6 +27,7 @@ options:
   relight_enabled: true        # relighting version A (surfaces lisses + vitres lat./arrière)
   plate_enabled: true          # remplacer la plaque par la PLATE image
   interior_window_whiten: true # blanchiment des vitres en intérieur
+  purge_apres_export: false    # supprimer les rendus du stockage app après export Drive
 
 references_actives:            # asset choisi dans chaque bibliothèque uploadable (résolu en Phase 2)
   showroom_asset_id: ""        # id de la vignette sélectionnée

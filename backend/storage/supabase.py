@@ -85,12 +85,34 @@ def update(table: str, match: dict[str, Any], patch: dict[str, Any]) -> list[dic
 
 
 def select(table: str, match: dict[str, Any] | None = None,
-           columns: str = "*") -> list[dict[str, Any]]:
-    """Sélectionne des lignes (filtres d'égalité optionnels)."""
-    params = {"select": columns}
+           columns: str = "*", order: str | None = None,
+           limit: int | None = None) -> list[dict[str, Any]]:
+    """Sélectionne des lignes (filtres d'égalité + tri + limite optionnels)."""
+    params: dict[str, Any] = {"select": columns}
     for k, v in (match or {}).items():
         params[k] = f"eq.{v}"
+    if order:
+        params["order"] = order
+    if limit is not None:
+        params["limit"] = limit
     return _request("GET", _rest_url(table), params=params)
+
+
+def delete(table: str, match: dict[str, Any]) -> list[dict[str, Any]]:
+    """Supprime les lignes correspondant à `match` (égalités)."""
+    params = {k: f"eq.{v}" for k, v in match.items()}
+    return _request("DELETE", _rest_url(table), params=params,
+                    prefer="return=representation")
+
+
+def remove(bucket: str, path: str) -> None:
+    """Supprime un objet du stockage (best-effort : 404 ignoré)."""
+    import httpx  # import paresseux
+
+    headers = {"apikey": _key(), "Authorization": f"Bearer {_key()}"}
+    resp = httpx.delete(_object_url(bucket, path), headers=headers, timeout=DEFAULT_TIMEOUT)
+    if resp.status_code >= 400 and resp.status_code != 404:
+        raise SupabaseError(f"Remove {bucket}/{path} -> {resp.status_code}: {resp.text[:200]}")
 
 
 # --------------------------------------------------------------------------- #

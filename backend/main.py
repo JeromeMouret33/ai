@@ -24,6 +24,7 @@ import logging
 import os
 import time
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -170,6 +171,8 @@ async def create_job(
     marque: str = Form(...),
     modele: str = Form(...),
     infos: str = Form(""),
+    client_nom: str = Form(...),
+    client_prenom: str = Form(""),
     files: list[UploadFile] = File(...),
 ) -> dict[str, Any]:
     from backend.pipeline import naming
@@ -187,8 +190,10 @@ async def create_job(
     folder = naming.folder_name(
         marque, modele, infos,
         template=config["nomenclature"].get("dossier", naming.DEFAULT_FOLDER_TEMPLATE),
+        client_nom=client_nom, client_prenom=client_prenom,
     )
     job = sb.insert("jobs", {"marque": marque, "modele": modele, "infos": infos,
+                             "client_nom": client_nom, "client_prenom": client_prenom,
                              "drive_folder": folder, "status": "pending"})
     job_id = job["id"]
 
@@ -214,6 +219,23 @@ async def create_job(
     return {"job_id": job_id, "drive_folder": folder, "photos": len(photos)}
 
 
+@protected.get("/api/jobs")
+def list_jobs() -> list[dict[str, Any]]:
+    """Historique de l'app : jobs récents (plus récent d'abord) + nb de photos."""
+    from backend.storage import supabase as sb
+    rows = sb.select("jobs", columns="*,photos(count)", order="created_at.desc", limit=200)
+    out: list[dict[str, Any]] = []
+    for j in rows:
+        photos = j.pop("photos", None)
+        count = (
+            photos[0].get("count")
+            if isinstance(photos, list) and photos and isinstance(photos[0], dict)
+            else None
+        )
+        out.append({**j, "photo_count": count})
+    return out
+
+
 @protected.get("/api/jobs/{job_id}")
 def get_job(job_id: str) -> dict[str, Any]:
     from backend.storage import supabase as sb
@@ -221,6 +243,20 @@ def get_job(job_id: str) -> dict[str, Any]:
     if not jobs:
         raise HTTPException(404, "job introuvable")
     return {"job": jobs[0], "photos": sb.select("photos", {"job_id": job_id})}
+
+
+@protected.delete("/api/jobs/{job_id}")
+def delete_job(job_id: str) -> dict[str, str]:
+    """Supprime un job de l'historique app : rendus + sources + enregistrements."""
+    from backend.storage import supabase as sb
+    for p in sb.select("photos", {"job_id": job_id}):
+        if p.get("candidate_path"):
+            sb.remove(sb.BUCKET_OUTPUTS, p["candidate_path"])
+        if p.get("source_url"):
+            sb.remove(sb.BUCKET_UPLOADS, p["source_url"])
+    sb.delete("jobs", {"id": job_id})  # cascade -> supprime les photos
+    logger.info("job %s supprimé (historique app)", job_id)
+    return {"deleted": job_id}
 
 
 @protected.post("/api/jobs/{job_id}/deliver")
@@ -241,8 +277,9 @@ def deliver_job(job_id: str, body: DeliverBody) -> dict[str, Any]:
             for p in rows
         ],
     }
+    config = load_config()
     plan = delivery.build_plan(manifest, set(body.sources))
-    parent_id = drive.parent_folder_id(load_config())
+    parent_id = drive.parent_folder_id(config)
     folder_id = drive.create_vehicle_folder(jobs[0]["drive_folder"], parent_id)
     uploads: list[dict[str, Any]] = []
     for item in plan:
@@ -250,10 +287,22 @@ def deliver_job(job_id: str, body: DeliverBody) -> dict[str, Any]:
         file_id = drive.upload_bytes(folder_id, data, item["target_filename"])
         uploads.append({"target_filename": item["target_filename"], "drive_file_id": file_id})
 
-    sb.update("jobs", {"id": job_id}, {"status": "delivered", "drive_folder_id": folder_id})
+    sb.update("jobs", {"id": job_id}, {
+        "status": "delivered", "drive_folder_id": folder_id,
+        "delivered_at": datetime.now(timezone.utc).isoformat(),
+    })
     for src in body.sources:
         sb.update("photos", {"job_id": job_id, "source_name": src}, {"kept": True})
-    logger.info("job %s livré : %d fichiers -> dossier %s", job_id, len(uploads), folder_id)
+
+    # Purge optionnelle des rendus du stockage app après export (option Config).
+    if config["options"].get("purge_apres_export"):
+        for item in plan:
+            sb.remove(sb.BUCKET_OUTPUTS, item["candidate_path"])
+        for src in body.sources:
+            sb.update("photos", {"job_id": job_id, "source_name": src},
+                      {"candidate_url": None, "candidate_path": None})
+
+    logger.info("job %s exporté : %d fichiers -> dossier %s", job_id, len(uploads), folder_id)
     return {"folder_name": jobs[0]["drive_folder"], "folder_id": folder_id, "uploads": uploads}
 
 

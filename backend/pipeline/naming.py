@@ -47,14 +47,23 @@ def folder_name(
     modele: str,
     infos: str = "",
     template: str = DEFAULT_FOLDER_TEMPLATE,
+    client_nom: str = "",
+    client_prenom: str = "",
 ) -> str:
-    """Nom lisible du dossier véhicule (casse d'origine conservée)."""
+    """Nom lisible du dossier d'export (casse d'origine conservée).
+
+    Variables : {client_nom} {client_prenom} {Marque} {Modèle} {infos}.
+    Les espaces multiples sont normalisés et les tirets orphelins (client vide)
+    sont retirés en tête/queue.
+    """
     out = (
-        template.replace("{Marque}", marque or "")
+        template.replace("{client_nom}", client_nom or "")
+        .replace("{client_prenom}", client_prenom or "")
+        .replace("{Marque}", marque or "")
         .replace("{Modèle}", modele or "")
         .replace("{infos}", infos or "")
     )
-    return " ".join(out.split())  # normalise les espaces (gère infos vide)
+    return " ".join(out.split()).strip(" -")
 
 
 def file_name(
