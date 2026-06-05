@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api } from "@/lib/api";
+import { api, type ReferenceAsset } from "@/lib/api";
 import {
   Badge,
   Button,
@@ -55,6 +55,16 @@ export default function GenerationPage() {
 
   const { data, error, loading } = useJob(jobId, true, 3000);
 
+  // Vérifie qu'un showroom + un logo actifs existent (requis pour générer).
+  const [assets, setAssets] = useState<ReferenceAsset[] | null>(null);
+  useEffect(() => {
+    api.listAssets().then(setAssets).catch(() => setAssets(null));
+  }, []);
+  const activeShowroom = !!assets?.some((a) => a.type === "showroom" && a.active);
+  const activeLogo = !!assets?.some((a) => a.type === "logo" && a.active);
+  // assets===null : non chargé -> on ne bloque pas côté front (le backend tranchera).
+  const refsMissing = assets !== null && (!activeShowroom || !activeLogo);
+
   const addFiles = useCallback((list: FileList | null) => {
     if (!list) return;
     // Snapshot SYNCHRONE : l'input est vidé (value="") juste après l'appel ;
@@ -83,7 +93,11 @@ export default function GenerationPage() {
   };
 
   const canSubmit =
-    marque.trim() && modele.trim() && files.length > 0 && !submitting;
+    marque.trim() &&
+    modele.trim() &&
+    files.length > 0 &&
+    !submitting &&
+    !refsMissing;
 
   return (
     <div>
@@ -93,6 +107,23 @@ export default function GenerationPage() {
       />
 
       <div className="space-y-6">
+        {refsMissing ? (
+          <Card>
+            <p className="text-sm text-amber-300">
+              Avant de générer, il faut un <strong>showroom</strong> et un{" "}
+              <strong>logo</strong> actifs.
+              {!activeShowroom ? " Showroom actif manquant." : ""}
+              {!activeLogo ? " Logo actif manquant." : ""}
+            </p>
+            <Link
+              href="/config"
+              className="mt-3 inline-block text-accent underline-offset-4 hover:underline"
+            >
+              → Aller à la configuration
+            </Link>
+          </Card>
+        ) : null}
+
         <Card>
           <form onSubmit={submit} className="space-y-4">
             <Field label="Marque">

@@ -175,6 +175,14 @@ async def create_job(
     from backend.pipeline import naming
     from backend.storage import supabase as sb
 
+    # Garde : un showroom ET un logo ACTIFS sont requis (rendus extérieurs).
+    for role in ("showroom", "logo"):
+        if not sb.get_active_asset(role):
+            raise HTTPException(
+                400,
+                f"Aucun {role} actif. Sélectionne un {role} dans l'écran Configuration avant de générer.",
+            )
+
     config = load_config()
     folder = naming.folder_name(
         marque, modele, infos,

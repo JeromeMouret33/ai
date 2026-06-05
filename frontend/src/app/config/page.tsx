@@ -497,11 +497,12 @@ function UploadForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !name.trim()) return;
+    if (!file) return;
     setBusy(true);
     setError(null);
     try {
-      await api.uploadAsset(type, name.trim(), file);
+      // Nom optionnel : par défaut le nom du fichier.
+      await api.uploadAsset(type, name.trim() || file.name, file);
       setName("");
       setFile(null);
       onUploaded();
@@ -522,7 +523,7 @@ function UploadForm({
       </p>
       <input
         className={inputClass}
-        placeholder="Nom"
+        placeholder="Nom (optionnel)"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
@@ -537,7 +538,7 @@ function UploadForm({
         type="submit"
         variant="secondary"
         className="w-full"
-        disabled={busy || !file || !name.trim()}
+        disabled={busy || !file}
       >
         {busy ? "Upload…" : "Uploader"}
       </Button>
