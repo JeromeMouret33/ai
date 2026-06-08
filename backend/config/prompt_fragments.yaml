@@ -6,82 +6,56 @@
 #   {ANGLE}, {FRAMING_PRESET}, {LOGO_POSITION_SIZE}, {RATIO}, {RESOLUTION}.
 
 role: |
-  Professional automotive studio compositor.
+  Professional automotive studio photographer and compositor.
 
 vehicle_lock: |
-  The car in the vehicle image is the subject. Preserve its IDENTITY exactly: same
-  model, trim, proportions, silhouette, body lines, panel gaps and paint COLOUR
-  (hue). These fine details are copied faithfully and never redrawn, added or
-  removed: headlights, tail lights, wheels/rims, grille, badges, emblems, lettering,
-  mirrors, door handles. LIGHT-EMITTING ELEMENTS ARE STRICTLY LOCKED: daytime
-  running lights (DRLs), headlight internals and lenses, indicators and tail lights
-  keep their EXACT original shape, internal pattern, light signature, colour and
-  glow — never re-rendered, relit, brightened, recoloured or restyled; their lenses
-  are NOT treated as "glass". Do NOT change the model or the geometry, and do not
-  invent missing parts. However, capture flaws of the SOURCE PHOTO (blown-out sun
-  highlights, harsh specular glare, strong cast shadows, uneven or coloured
-  exposure) MAY be normalised to the clean studio light (see the relighting rule),
-  as long as the paint hue, geometry and every fine detail stay identical.
+  Reproduce THIS exact car faithfully: same model, trim, body colour, wheels/rims,
+  headlights and tail lights, grille, badges and lettering — it must clearly be the
+  same vehicle. You MAY re-photograph it from the showroom's natural eye-level
+  camera at the requested angle; you do NOT have to copy the source photo's viewpoint
+  or perspective. Keep its design and proportions believable and consistent; do not
+  turn it into a different model or restyle it.
 
 ref_showroom: |
-  SHOWROOM image (empty, clean wall, NO logo). Reproduce it EXACTLY: same white
-  matte walls and corner, same warm LED cove strip, same recessed ceiling spots,
-  same light-grey lightly textured floor with subtle reflection. Do NOT recolor,
-  redesign, relight, or move anything in the environment.
+  Reproduce the SHOWROOM image faithfully: same white matte walls and corner, soft
+  warm lighting, light-grey floor with a subtle reflection. Do not redesign,
+  recolour, relight or move the environment.
 
 ref_logo: |
-  LOGO image (GOODCAR). Reproduce the GOODCAR logo on the upper-left wall as a FLAT
-  printed/painted brand sign in its EXACT original colours — same shapes, wordmark,
-  tagline and colour fills, correct aspect ratio, crisp legible text. It is a
-  coloured graphic APPLIED on the wall, NOT a monochrome engraving or an embossed/
-  raised 3D relief: keep its real colours, do NOT tint it to the wall colour, do NOT
-  desaturate, recolour, relight, stretch, distort, crop, duplicate or restyle it.
-  Position: {LOGO_POSITION_SIZE}. Maximum logo fidelity.
+  Place the GOODCAR logo (logo image) on the upper-left wall as a FLAT sign in its
+  real colours — same shapes, text and colours, correct aspect ratio, crisp and
+  legible. Not a monochrome engraving, not tinted to the wall colour.
+  Position: {LOGO_POSITION_SIZE}.
 
 ref_vehicle: |
-  VEHICLE image — the exact car to feature (see the locked-asset rule above).
+  VEHICLE image — the exact car to feature.
 
 ref_plate: |
   PLATE image — the GOODCAR license plate to apply to the vehicle.
 
 task_base: |
-  Place the vehicle from the vehicle image into the showroom from the showroom
-  image as if professionally photographed there, shown at: {ANGLE}. Ground it
-  realistically — wheels firmly on the floor, with a soft contact shadow under the
-  car and a subtle reflection of the car on the showroom floor, matching the
-  showroom's soft, slightly warm light. Place the GOODCAR logo on the wall as
-  specified.
+  Place the car inside the showroom as a real photo taken on location, shown at:
+  {ANGLE}. Photograph it at natural eye level, with realistic proportions relative
+  to the room, wheels firmly on the floor, a soft contact shadow and a subtle
+  reflection on the floor. Use the showroom's soft, even, slightly warm studio
+  light, and remove the source photo's sun glare, blown highlights and harsh shadows.
 
 relight: |
-  Relight the car to match the showroom's soft, even, slightly warm studio light.
-  On the large smooth painted body panels (doors, hood, roof, fenders, bumpers) and
-  the side/rear window glass you MAY: even out the exposure and REMOVE the source
-  photo's sun hotspots, blown highlights, harsh specular glare and strong cast
-  shadows, replacing them with clean soft studio reflections and highlights laid
-  OVER the existing surface. This must never redraw any shape and never change the
-  actual paint hue.
-  FORBIDDEN: relighting or re-rendering any light-emitting element (DRLs, headlights,
-  indicators, tail lights) or treating their lenses as glass; altering wheels,
-  grille, badges, lettering, optics or any fine detail; changing the paint colour.
+  Even out the lighting and remove sun hotspots and harsh shadows on the smooth body
+  panels and side/rear glass, matching the soft studio light. Do not change the
+  paint colour, and do not alter the lights, wheels, grille or badges.
 
 plate: |
-  Replace the vehicle's visible license plate(s) with the plate from the plate
-  image, fitted neatly into the existing plate area with correct perspective,
-  undistorted. Reproduce the plate exactly as in the plate image.
+  Replace the visible license plate(s) with the plate from the plate image, fitted
+  in correct perspective, undistorted.
 
 composition: |
   COMPOSITION ({ANGLE}): {FRAMING_PRESET}
 
 constraints: |
-  STRICT CONSTRAINTS:
-  - Output {RATIO}, {RESOLUTION}, photoreal, clean, no artifacts.
-  - Keep the showroom 100% identical to the showroom image on every generation.
-  - The car's identity is locked (model, paint hue, wheels, lights, grille, badges,
-    body lines, proportions). Do NOT hallucinate, invent, complete or "improve" any
-    part of the car.
-  - The logo must match the logo image exactly: undistorted, correct aspect ratio,
-    legible text, placed once on the upper-left wall.
-  - No added text, watermarks, people, or extra objects.
+  Output {RATIO}, {RESOLUTION}, photoreal and clean. Keep the showroom identical to
+  the showroom image. It must clearly remain the same car (model, colour, wheels,
+  lights, badges). No added text, watermark, people or extra objects.
 
 interior: |
   INTERIOR: Keep the cabin from the vehicle image exactly as-is; do not place it in

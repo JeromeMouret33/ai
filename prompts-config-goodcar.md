@@ -19,6 +19,12 @@ Chaque référence provient d’une **bibliothèque uploadable** dans l’app : 
 
 ## 2. Fragments de prompt (éditables en config)
 
+> ⚠️ **2026-06-04 — prompts simplifiés (version épurée).** On a allégé les fragments
+> (moins de verrouillage, on autorise une re-photo à hauteur d'œil pour corriger les
+> perspectives plongée/contre-plongée). La **version vivante et autoritative** est
+> `backend/config/prompt_fragments.yaml`. Les blocs ci-dessous décrivent l'intention
+> d'origine (version A détaillée) et peuvent diverger pendant l'itération.
+
 ### `role` — toujours
 
 ```

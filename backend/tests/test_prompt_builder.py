@@ -21,21 +21,22 @@ def test_exterior_assembly_roles_and_substitution():
     assert "3:2" in built.text
     assert "1K" in built.text
     # Fragments présents.
-    assert "Professional automotive studio compositor." in built.text
+    assert "compositor" in built.text
     assert "SHOWROOM image" in built.text
+    assert "eye level" in built.text
 
 
 def test_plate_toggle_off_excludes_plate():
     cfg = _cfg()
     built = prompt_builder.build("face-avant", {"relight_enabled": True, "plate_enabled": False}, cfg)
     assert "plate" not in built.reference_roles
-    assert "Replace the vehicle's visible license plate" not in built.text
+    assert "Replace the visible license plate" not in built.text
 
 
 def test_relight_toggle_off_excludes_relight():
     cfg = _cfg()
     built = prompt_builder.build("face-avant", {"relight_enabled": False, "plate_enabled": False}, cfg)
-    assert "You MAY add subtle, photoreal showroom relighting" not in built.text
+    assert "remove sun hotspots and harsh shadows" not in built.text
 
 
 def test_interior_assembly_minimal():
