@@ -11,10 +11,12 @@ role: |
 vehicle_lock: |
   Reproduce THIS exact car faithfully: same model, trim, body colour, wheels/rims,
   headlights and tail lights, grille, badges and lettering — it must clearly be the
-  same vehicle. You MAY re-photograph it from the showroom's natural eye-level
-  camera at the requested angle; you do NOT have to copy the source photo's viewpoint
-  or perspective. Keep its design and proportions believable and consistent; do not
-  turn it into a different model or restyle it.
+  same vehicle. Copy the headlights and tail lights EXACTLY: keep their outline and
+  their internal LED / light-graphic pattern faithful to the source — do not redraw,
+  reshape, simplify, smooth out or reinvent the optics. You MAY re-photograph it from
+  the showroom's natural eye-level camera at the requested angle; you do NOT have to
+  copy the source photo's viewpoint or perspective. Keep its design and proportions
+  believable and consistent; do not turn it into a different model or restyle it.
 
 ref_showroom: |
   Reproduce the SHOWROOM image faithfully: same white matte walls and corner, soft
