@@ -4,7 +4,7 @@ from backend.config.loader import known_angles, load_config
 def test_load_config_structure():
     cfg = load_config()
     assert set(cfg) >= {"fragments", "params", "nomenclature", "options", "references"}
-    assert cfg["params"]["models"]["generation"] == "google/gemini-3-pro-image-preview"
+    assert cfg["params"]["models"]["generation"] == "google/gemini-3.1-flash-image-preview"
     assert cfg["params"]["candidates_per_photo"] == 1
     assert cfg["options"]["relight_enabled"] is True
 

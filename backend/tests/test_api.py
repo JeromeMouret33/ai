@@ -15,7 +15,7 @@ def test_get_config_exposes_fragments_and_params():
     r = client.get("/api/config")
     assert r.status_code == 200
     cfg = r.json()
-    assert cfg["params"]["models"]["generation"] == "google/gemini-3-pro-image-preview"
+    assert cfg["params"]["models"]["generation"] == "google/gemini-3.1-flash-image-preview"
     assert "role" in cfg["fragments"]
     assert "face-avant" in cfg["fragments"]["angle_presets"]
 

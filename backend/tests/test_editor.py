@@ -17,7 +17,7 @@ def test_update_params_applies_and_preserves_comments(tmp_path):
     cfg = loader.load_config(cdir)
     assert cfg["params"]["candidates_per_photo"] == 3
     # Les autres valeurs ne bougent pas.
-    assert cfg["params"]["models"]["generation"] == "google/gemini-3-pro-image-preview"
+    assert cfg["params"]["models"]["generation"] == "google/gemini-3.1-flash-image-preview"
     # Un commentaire connu doit toujours être présent (round-trip ruamel).
     text = (tmp_path / loader.PARAMS_FILE).read_text(encoding="utf-8")
     assert "éditables dans l'app" in text
