@@ -5,8 +5,22 @@ parametres:
   # Trois rôles IA, chacun avec son propre modèle (via OpenRouter).
   models:
     classification: "openai/gpt-4o-mini"             # vision (détection d'angle)
-    generation: "google/gemini-3-pro-image-preview"  # Nano Banana Pro (défaut)
+    generation: "google/gemini-3.1-flash-image-preview"  # défaut (Nano Banana 2 Flash)
     qc: "openai/gpt-4o-mini"                          # vision (contrôle qualité)
+
+  # Catalogue des modèles de génération proposés dans le menu déroulant (Config).
+  # Ajouter une entrée {label, slug} ici => elle apparaît dans le menu, SANS toucher au code.
+  # Le slug est passé tel quel dans le champ "model" de l'appel OpenRouter.
+  # ⚠️ Slugs à confirmer sur https://openrouter.ai/collections/image-models (non vérifiables ici).
+  generation_models:
+    - label: "Nano Banana 2 (Flash) — recommandé"
+      slug: "google/gemini-3.1-flash-image-preview"
+    - label: "Nano Banana Pro (fidélité max)"
+      slug: "google/gemini-3-pro-image-preview"
+    - label: "Nano Banana 1 (le moins cher)"
+      slug: "google/gemini-2.5-flash-image-preview"
+    - label: "Seedream 4.5 (ByteDance)"
+      slug: "bytedance/seedream-4.5"
   ratio: "3:2"               # format photo classique (configurable : 4:3, 16:9…)
   resolution: "1K"           # palier natif Nano Banana
   candidates_per_photo: 1    # défaut verrouillé à 1 (configurable dans l'app)

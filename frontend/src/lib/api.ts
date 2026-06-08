@@ -43,6 +43,7 @@ export interface ConfigModels {
 
 export interface ConfigParams {
   models: ConfigModels;
+  generation_models?: { label: string; slug: string }[];
   ratio: string;
   resolution: string;
   candidates_per_photo: number;

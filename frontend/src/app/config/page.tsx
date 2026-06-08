@@ -270,7 +270,12 @@ export default function ConfigPage() {
                 <ModelSelect
                   value={models.generation}
                   onChange={(v) => setModels({ ...models, generation: v })}
-                  options={GEN_MODELS}
+                  options={
+                    config.params.generation_models?.map((m) => ({
+                      value: m.slug,
+                      label: m.label,
+                    })) ?? GEN_MODELS
+                  }
                 />
               </Field>
               <Field label="QC">
