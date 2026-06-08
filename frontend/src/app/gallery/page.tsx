@@ -12,6 +12,7 @@ import {
   SuccessBanner,
 } from "@/components/ui";
 import { JobPicker } from "@/components/JobPicker";
+import { Lightbox } from "@/components/Lightbox";
 import { useToast } from "@/components/Toast";
 import { getStoredJobId, setStoredJobId, useJob } from "@/lib/useJob";
 
@@ -29,6 +30,7 @@ export default function GalleryPage() {
   const [result, setResult] = useState<DeliverResult | null>(null);
   const [retrying, setRetrying] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [viewer, setViewer] = useState<number | null>(null);
   const toast = useToast();
 
   const regenerate = async (p: Photo) => {
@@ -174,13 +176,13 @@ export default function GalleryPage() {
           ) : null}
 
           <div className="grid grid-cols-2 gap-3 pb-20">
-            {photos.map((p) => {
+            {photos.map((p, idx) => {
               const checked = !!selected[p.id];
               const ko = p.qc_verdict === "ko";
               return (
                 <div
                   key={p.id}
-                  className={`group overflow-hidden rounded-2xl border transition-all ${
+                  className={`group relative overflow-hidden rounded-2xl border transition-all ${
                     checked
                       ? "border-accent ring-2 ring-accent"
                       : ko
@@ -188,10 +190,10 @@ export default function GalleryPage() {
                         : "border-border"
                   }`}
                 >
-                  {/* Zone image = cochage (sélection pour export). */}
+                  {/* Zone image = ouvre la visionneuse. */}
                   <button
                     type="button"
-                    onClick={() => toggle(p.id)}
+                    onClick={() => setViewer(idx)}
                     className="relative block w-full bg-surface-2 text-left"
                   >
                     {p.candidate_url ? (
@@ -211,15 +213,22 @@ export default function GalleryPage() {
                         non conforme
                       </span>
                     ) : null}
-                    <span
-                      className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold transition-colors ${
-                        checked
-                          ? "bg-accent text-accent-contrast"
-                          : "bg-black/60 text-transparent backdrop-blur group-hover:text-zinc-400"
-                      }`}
-                    >
-                      ✓
-                    </span>
+                  </button>
+                  {/* Coche = sélection pour export (séparée de l'ouverture). */}
+                  <button
+                    type="button"
+                    aria-label={checked ? "Retirer de la sélection" : "Garder"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggle(p.id);
+                    }}
+                    className={`absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                      checked
+                        ? "bg-accent text-accent-contrast"
+                        : "bg-black/60 text-zinc-300 backdrop-blur active:bg-black/80"
+                    }`}
+                  >
+                    ✓
                   </button>
 
                   <div className="space-y-1.5 bg-surface p-2.5">
@@ -291,6 +300,17 @@ export default function GalleryPage() {
             </div>
           ) : null}
         </>
+      ) : null}
+
+      {viewer !== null && photos.length > 0 ? (
+        <Lightbox
+          photos={photos}
+          index={Math.min(viewer, photos.length - 1)}
+          setIndex={setViewer}
+          selected={selected}
+          onToggle={toggle}
+          onClose={() => setViewer(null)}
+        />
       ) : null}
     </div>
   );
