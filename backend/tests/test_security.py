@@ -1,7 +1,37 @@
 import pytest
+from fastapi import HTTPException
 
 from backend import auth
+from backend.main import _sniff_image
 from backend.pipeline import naming
+
+
+# --- Magic bytes : seules de vraies images raster passent ---
+def test_sniff_image_accepts_real_formats():
+    assert _sniff_image(b"\xff\xd8\xff\xe0rest") == "image/jpeg"
+    assert _sniff_image(b"\x89PNG\r\n\x1a\nrest") == "image/png"
+    assert _sniff_image(b"RIFF\x00\x00\x00\x00WEBPrest") == "image/webp"
+    assert _sniff_image(b"\x00\x00\x00\x18ftypheicrest") == "image/heic"
+
+
+def test_sniff_image_rejects_svg_and_junk():
+    # SVG = XML scriptable -> refusé même avec un Content-Type image/svg+xml.
+    with pytest.raises(HTTPException):
+        _sniff_image(b"<svg xmlns='http://www.w3.org/2000/svg'><script>alert(1)</script></svg>")
+    with pytest.raises(HTTPException):
+        _sniff_image(b"GIF89a maybe")  # GIF non accepté (pas un format photo)
+    with pytest.raises(HTTPException):
+        _sniff_image(b"")
+
+
+# --- JWT : algorithmes hors allow-list refusés ---
+def test_verify_token_rejects_unknown_alg(monkeypatch):
+    monkeypatch.setenv("SUPABASE_URL", "https://proj.supabase.co")
+    import jwt as pyjwt
+    token = pyjwt.encode({"aud": "authenticated"}, "k", algorithm="HS384")
+    with pytest.raises(auth.AuthError) as exc:
+        auth.verify_token(token)
+    assert "refusé" in exc.value.detail
 
 
 # --- Path traversal : assainissement des noms de fichiers ---

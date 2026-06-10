@@ -1,7 +1,49 @@
 # Audit de sécurité — Showroom IA (GOODCAR)
 
-Date : 2026-06-03. Portée : backend FastAPI, pipeline, stockage Supabase/Drive,
-frontend Next.js/PWA, authentification. Légende statut : ✅ corrigé · 🟡 recommandé · ℹ️ noté.
+Dates : 2026-06-03 (initial) · **2026-06-05 (2e passe, post-évolutions)**.
+Portée : backend FastAPI, pipeline, stockage Supabase/Drive, frontend Next.js/PWA,
+authentification. Légende statut : ✅ corrigé · 🟡 recommandé · ℹ️ noté.
+
+---
+
+# 2e passe — 2026-06-05
+
+Surface réauditée : auth JWKS, nouveaux endpoints (download/archive/cancel/retry/
+list/delete), zip, purge, config éditable, visionneuse. Vérifié sain : aucun secret
+commité (`.env` ignoré), RLS actives, buckets privés, path traversal couvert
+(`safe_filename` partout, y compris l'en-tête du zip), SW sans interception
+cross-origin, rate limiting sur les routes payantes, fail-closed en prod.
+
+### S1 · JWT : algorithme lu dans le header non borné ✅
+`jwt.decode(..., algorithms=[alg])` utilisait l'algo déclaré par le token
+(non vérifié) → surface « algorithm confusion ». **Correctif** : allow-list
+stricte (HS256 legacy explicite, sinon ES256/RS256 uniquement) ; tout autre
+algo → 401. Testé (HS384 refusé).
+
+### S2 · Upload : seul le Content-Type déclaré était vérifié ✅
+Un fichier non-image (ou un **SVG scriptable**, dangereux sur le bucket public
+`references` → XSS) passait avec un en-tête falsifié. **Correctif** : validation
+des **magic bytes** (JPEG/PNG/WebP/HEIC uniquement, SVG/GIF refusés) sur les deux
+chemins d'upload ; le MIME stocké est celui **détecté**, plus le déclaré. Testé.
+
+### S3 · Upload : fichier lu entièrement en RAM avant le plafond ✅
+`await file.read()` chargeait tout en mémoire puis vérifiait la taille → DoS
+mémoire possible (utilisateur authentifié). **Correctif** : lecture **par
+tranches de 1 Mo** avec plafond appliqué pendant la lecture (413 dès dépassement).
+
+### Restant accepté / recommandations (2e passe)
+- 🟡 CSP avec `'unsafe-inline'` (contrainte Next sans nonces) — durcir plus tard.
+- ℹ️ Pas de cloisonnement par utilisateur (tous les invités voient tous les jobs
+  et peuvent éditer la config, y compris `drive_parent_folder`) — **modèle
+  d'équipe de confiance assumé** ; ajouter un rôle admin si l'équipe s'élargit.
+- ℹ️ URLs signées 30 j : confort (vignettes) vs fenêtre d'exposition si une URL
+  fuite — compromis assumé, ajustable via `SIGNED_URL_TTL`.
+- ℹ️ `npm audit` : 2 modérées inchangées (postcss via Next, build-time only).
+- ℹ️ Jobs orphelins si redeploy pendant un traitement (suppression manuelle).
+
+---
+
+# 1re passe — 2026-06-03
 
 ## Synthèse
 3 problèmes **élevés** corrigés (RLS, path traversal, auth fail-open), validation

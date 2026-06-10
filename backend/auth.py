@@ -41,6 +41,10 @@ def _jwks_url() -> str:
     return f"{base}/auth/v1/.well-known/jwks.json" if base else ""
 
 
+# Algorithmes acceptés (allow-list stricte : jamais l'algo lu dans le header).
+ASYMMETRIC_ALGS = ("ES256", "RS256")
+
+
 def verify_token(token: str) -> dict[str, Any]:
     """Vérifie un JWT Supabase (HS256 legacy ou ES256/RS256 via JWKS)."""
     try:
@@ -54,12 +58,15 @@ def verify_token(token: str) -> dict[str, Any]:
             if not secret:
                 raise AuthError(401, "Token HS256 mais SUPABASE_JWT_SECRET absent.")
             payload = jwt.decode(token, secret, algorithms=["HS256"], audience=SUPABASE_AUD)
-        else:
+        elif alg in ASYMMETRIC_ALGS:
             url = _jwks_url()
             if not url:
                 raise AuthError(401, "Token asymétrique mais SUPABASE_URL absent (JWKS).")
             key = _jwk_client(url).get_signing_key_from_jwt(token).key
-            payload = jwt.decode(token, key, algorithms=[alg], audience=SUPABASE_AUD)
+            payload = jwt.decode(token, key, algorithms=list(ASYMMETRIC_ALGS),
+                                 audience=SUPABASE_AUD)
+        else:
+            raise AuthError(401, f"Algorithme de signature refusé : {alg or 'absent'}.")
     except jwt.ExpiredSignatureError as exc:
         raise AuthError(401, "Token expiré.") from exc
     except jwt.InvalidTokenError as exc:

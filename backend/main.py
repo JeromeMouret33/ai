@@ -91,10 +91,44 @@ def _require_image(file: UploadFile) -> None:
         raise HTTPException(400, f"Type de fichier non autorisé : {file.content_type}")
 
 
-def _read_capped(data: bytes) -> bytes:
-    if len(data) > MAX_UPLOAD_BYTES:
-        raise HTTPException(413, "Fichier trop volumineux.")
-    return data
+def _sniff_image(data: bytes) -> str:
+    """Valide les octets réels (magic bytes) et renvoie le MIME détecté.
+
+    Le Content-Type déclaré est spoofable ; on n'accepte que de vraies images
+    raster (JPEG/PNG/WebP/HEIC). Le SVG est notamment exclu : c'est du XML
+    scriptable, dangereux sur un bucket servi publiquement (XSS).
+    """
+    if data[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    if data[4:8] == b"ftyp" and data[8:12] in (
+        b"heic", b"heix", b"hevc", b"mif1", b"msf1", b"avif",
+    ):
+        return "image/heic"
+    raise HTTPException(400, "Fichier refusé : ce n'est pas une image valide (JPEG/PNG/WebP/HEIC).")
+
+
+async def _read_upload(file: UploadFile) -> tuple[bytes, str]:
+    """Lit un upload PAR TRANCHES avec plafond (le cap s'applique pendant la
+    lecture, jamais après : pas d'explosion mémoire), puis valide les octets.
+
+    Renvoie (données, MIME détecté par magic bytes).
+    """
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        chunk = await file.read(1024 * 1024)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, "Fichier trop volumineux.")
+        chunks.append(chunk)
+    data = b"".join(chunks)
+    return data, _sniff_image(data)
 
 
 # --------------------------------------------------------------------------- #
@@ -150,9 +184,9 @@ async def upload_reference_asset(
     from backend.pipeline import naming
     from backend.storage import supabase as sb
 
-    data = _read_capped(await file.read())
+    data, mime = await _read_upload(file)
     path = f"{type}/{uuid.uuid4().hex}-{naming.safe_filename(file.filename or 'asset')}"
-    sb.upload(sb.BUCKET_REFERENCES, path, data, content_type=file.content_type or "image/png")
+    sb.upload(sb.BUCKET_REFERENCES, path, data, content_type=mime)
     url = sb.public_url(sb.BUCKET_REFERENCES, path)
     return sb.insert("reference_assets", {"type": type, "name": name, "url": url})
 
@@ -205,11 +239,11 @@ async def create_job(
     for f in files:
         _require_image(f)
         source = naming.safe_filename(f.filename or "photo")
-        data = _read_capped(await f.read())
+        data, mime = await _read_upload(f)
         (job_dir / source).write_bytes(data)
         # Source persistée dans le bucket `uploads` (privé) → indispensable au retry.
         src_path = f"{job_id}/{source}"
-        sb.upload(sb.BUCKET_UPLOADS, src_path, data, content_type=f.content_type or "image/jpeg")
+        sb.upload(sb.BUCKET_UPLOADS, src_path, data, content_type=mime)
         photo = sb.insert("photos", {"job_id": job_id, "source_name": source,
                                       "source_url": src_path, "status": "pending"})
         photos.append({"photo_id": photo["id"], "source": source, "path": str(job_dir / source)})
