@@ -45,7 +45,8 @@ export default function HistoryPage() {
     const q = query.trim().toLowerCase();
     const from = fromDate ? new Date(fromDate) : null;
     return (jobs ?? []).filter((j) => {
-      if (!j.archived_at) return false; // Réalisations = jobs validés/archivés
+      // Réalisations = jobs validés/archivés + jobs ANNULÉS (trace des annulations).
+      if (!j.archived_at && j.status !== "cancelled") return false;
       if (q && !jobLabel(j).toLowerCase().includes(q)) return false;
       if (from && j.created_at && new Date(j.created_at) < from) return false;
       return true;
@@ -180,13 +181,25 @@ export default function HistoryPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="secondary"
-                disabled={downloadingId === j.id}
-                onClick={() => download(j)}
-              >
-                {downloadingId === j.id ? "…" : "Télécharger"}
-              </Button>
+              {j.purged_at ? (
+                // Rendus purgés du stockage après export : les photos vivent sur le Drive.
+                <Button variant="secondary" disabled title="Photos disponibles sur le Drive">
+                  Sur le Drive ✓
+                </Button>
+              ) : j.archived_at ? (
+                <Button
+                  variant="secondary"
+                  disabled={downloadingId === j.id}
+                  onClick={() => download(j)}
+                >
+                  {downloadingId === j.id ? "…" : "Télécharger"}
+                </Button>
+              ) : (
+                // Job annulé non validé : rien à re-télécharger.
+                <Button variant="secondary" disabled>
+                  Annulé
+                </Button>
+              )}
               <Button
                 variant="danger"
                 disabled={deleting === j.id}

@@ -23,5 +23,8 @@ def test_get_config_exposes_fragments_and_params():
 def test_openapi_lists_core_routes():
     paths = client.get("/openapi.json").json()["paths"]
     for route in ["/api/config", "/api/jobs", "/api/reference-assets",
-                  "/api/history", "/api/jobs/{job_id}/deliver"]:
+                  "/api/jobs/{job_id}/deliver", "/api/jobs/{job_id}/download",
+                  "/api/jobs/{job_id}/archive", "/api/jobs/{job_id}/cancel"]:
         assert route in paths
+    # Endpoints Drive « historique » supprimés (l'historique vit dans l'app).
+    assert "/api/history" not in paths

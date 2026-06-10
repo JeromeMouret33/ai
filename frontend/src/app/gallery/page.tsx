@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { api, type DeliverResult, type Photo } from "@/lib/api";
+import { api, type Photo } from "@/lib/api";
 import {
   Badge,
   Button,
@@ -9,7 +9,6 @@ import {
   ErrorBanner,
   PageTitle,
   Spinner,
-  SuccessBanner,
 } from "@/components/ui";
 import { JobPicker } from "@/components/JobPicker";
 import { Lightbox } from "@/components/Lightbox";
@@ -27,7 +26,6 @@ export default function GalleryPage() {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [delivering, setDelivering] = useState(false);
   const [deliverError, setDeliverError] = useState<unknown>(null);
-  const [result, setResult] = useState<DeliverResult | null>(null);
   const [retrying, setRetrying] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [viewer, setViewer] = useState<number | null>(null);
@@ -103,10 +101,8 @@ export default function GalleryPage() {
     }
     setDelivering(true);
     setDeliverError(null);
-    setResult(null);
     try {
       const r = await api.deliverJob(jobId, selectedSources);
-      setResult(r);
       toast.success(
         `Exporté Drive (${r.uploads.length}) et archivé — dans Réalisations.`,
       );
@@ -164,14 +160,6 @@ export default function GalleryPage() {
           {deliverError ? (
             <div className="mb-4">
               <ErrorBanner error={deliverError} />
-            </div>
-          ) : null}
-          {result ? (
-            <div className="mb-4">
-              <SuccessBanner>
-                Livré dans « {result.folder_name} » — {result.uploads.length}{" "}
-                fichier(s) envoyé(s).
-              </SuccessBanner>
             </div>
           ) : null}
 

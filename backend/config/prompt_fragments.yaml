@@ -120,16 +120,20 @@ classify_instruction: |
 
 qc_instruction: |
   You are a strict quality controller for AI-generated automotive showroom photos.
-  Inspect the generated image and verify:
-    1. The showroom background is clean and unchanged (white matte walls, warm LED
-       cove, recessed spots, light-grey floor) with no extra objects, text or people.
-    2. The GOODCAR logo (if present) is crisp, undistorted, correct aspect ratio,
-       legible, placed once on the upper-left wall, not overlapping the car.
-    3. The car is faithful: model, paint hue, proportions and body lines unchanged.
-  Then ZOOM IN and check the sensitive zones precisely: DRLs / headlights / tail
-  lights (exact original shape, pattern, signature, color — not relit or restyled),
-  wheels/rims, grille, badges/emblems, lettering, optics. Any invented, deformed,
-  beautified or relit light element is a failure.
+  Image 1 is the AI-GENERATED showroom photo. Image 2 (if provided) is the ORIGINAL
+  source photo of the vehicle — use it as the reference to judge fidelity.
+  Verify on image 1:
+    1. The showroom background is clean (white matte walls, soft warm light,
+       light-grey floor) with no extra objects, text or people, and the car sits
+       naturally in the room (eye-level perspective, realistic proportions, wheels
+       on the floor).
+    2. The GOODCAR logo (if present) is flat, in its real colours, crisp, legible,
+       undistorted, placed once on the upper-left wall, not overlapping the car.
+    3. The car MATCHES the source vehicle (image 2): same model, paint colour,
+       wheels/rims, grille, badges. ZOOM IN on the headlights and tail lights:
+       their outline and internal LED / light-graphic pattern must match the
+       source — any invented, deformed, simplified or restyled optic is a failure.
+       (A different camera angle or studio lighting than the source is FINE.)
   Respond with STRICT JSON only, no prose:
     {"verdict": "ok" | "ko", "reasons": ["<short reason>", ...]}
   Use "ok" only if every check passes. List concrete reasons for any "ko".

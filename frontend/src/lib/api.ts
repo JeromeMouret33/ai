@@ -147,6 +147,7 @@ export interface Job {
   created_at?: string;
   delivered_at?: string | null;
   archived_at?: string | null; // null = encore à valider ; sinon dans Réalisations
+  purged_at?: string | null;   // non-null = rendus purgés après export (photos sur le Drive)
   photo_count?: number | null; // présent dans la liste /jobs
 }
 
@@ -165,12 +166,6 @@ export interface DeliverResult {
   folder_name: string;
   folder_id: string;
   uploads: unknown[];
-}
-
-export interface HistoryEntry {
-  id: string;
-  name: string;
-  createdTime: string;
 }
 
 // --------------------------------------------------------------------------- //
@@ -318,11 +313,4 @@ export const api = {
   // Photos
   retryPhoto: (id: string) =>
     request<Photo>(`/photos/${id}/retry`, { method: "POST" }),
-
-  // History
-  getHistory: () => request<HistoryEntry[]>("/history"),
-  deleteHistory: (folderId: string) =>
-    request<{ deleted: string }>(`/history/${folderId}`, {
-      method: "DELETE",
-    }),
 };

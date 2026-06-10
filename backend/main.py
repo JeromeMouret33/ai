@@ -297,12 +297,15 @@ def deliver_job(job_id: str, body: DeliverBody) -> dict[str, Any]:
         sb.update("photos", {"job_id": job_id, "source_name": src}, {"kept": True})
 
     # Purge optionnelle des rendus du stockage app après export (option Config).
+    # Le job est marqué `purged_at` : le re-téléchargement app est alors désactivé
+    # (les photos vivent sur le Drive), l'UI affiche « Sur le Drive ».
     if config["options"].get("purge_apres_export"):
         for item in plan:
             sb.remove(sb.BUCKET_OUTPUTS, item["candidate_path"])
         for src in body.sources:
             sb.update("photos", {"job_id": job_id, "source_name": src},
                       {"candidate_url": None, "candidate_path": None})
+        sb.update("jobs", {"id": job_id}, {"purged_at": now})
 
     logger.info("job %s exporté : %d fichiers -> dossier %s", job_id, len(uploads), folder_id)
     return {"folder_name": jobs[0]["drive_folder"], "folder_id": folder_id, "uploads": uploads}
@@ -336,6 +339,11 @@ def download_job(job_id: str, body: DeliverBody) -> StreamingResponse:
             zf.writestr(name, data)
             count += 1
     if count == 0:
+        if jobs[0].get("purged_at"):
+            raise HTTPException(
+                410,
+                "Rendus purgés du stockage après l'export : récupère les photos sur le Drive.",
+            )
         raise HTTPException(400, "Aucune photo sélectionnée avec un rendu disponible.")
 
     buf.seek(0)
@@ -378,23 +386,6 @@ def retry(photo_id: str, background: BackgroundTasks) -> dict[str, str]:
               {"status": "pending", "qc_verdict": None, "qc_reasons": []})
     background.add_task(retry_photo, photo_id)
     return {"retry": photo_id}
-
-
-# --------------------------------------------------------------------------- #
-# Historique (source Drive)
-# --------------------------------------------------------------------------- #
-@protected.get("/api/history")
-def history() -> list[dict[str, Any]]:
-    from backend.storage import drive
-    return drive.list_history(drive.parent_folder_id(load_config()))
-
-
-@protected.delete("/api/history/{folder_id}")
-def delete_history(folder_id: str) -> dict[str, str]:
-    from backend.storage import drive, supabase as sb
-    drive.delete_folder(folder_id)
-    sb.update("jobs", {"drive_folder_id": folder_id}, {"status": "error"})
-    return {"deleted": folder_id}
 
 
 # Montage des routes protégées.

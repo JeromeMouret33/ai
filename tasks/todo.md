@@ -93,6 +93,17 @@
 - [ ] Affinage du réglage fin du retry (modif d'un réglage avant relance).
 - [ ] Affinage des presets par angle (sur rendus réels).
 
+## Audit 2026-06-05 — corrections appliquées ✅
+- [x] #1 Collision de noms au retry : recalcul des noms sur TOUT le job (`_refresh_job_names`) + tests anti-régression.
+- [x] #2 Purge vs re-téléchargement : `purged_at` (migration 0002) ; Réalisations affiche « Sur le Drive ✓ » ; 410 explicite côté API.
+- [x] #3 QC comparatif : la photo SOURCE est envoyée en 2e image au QC + `qc_instruction` réécrite (aligné prompts épurés).
+- [x] #4 Jobs annulés visibles dans Réalisations (badge « annulé », bouton téléchargement adapté).
+- [x] #6 Coût des relances ajouté à `jobs.cost_total`.
+- [x] #7 Retry : échec persisté en statut error (plus de photo coincée en pending).
+- [x] #8 Bannière succès morte supprimée (Validation) ; #9 code mort `/api/history` + getHistory supprimés.
+- [x] #10 TTL URLs signées 7j → 30j ; #11 taux EUR via `NEXT_PUBLIC_EUR_PER_USD`.
+- Restant connu (accepté) : #5 jobs orphelins si redeploy pendant un traitement (suppression manuelle).
+
 ## Refonte « historique app-centré » (décidé 2026-06-04) — ✅ implémentée
 Direction : app = source de vérité (navigation par client/véhicule) ; Drive = bouton « Exporter » ;
 rétention configurable (garder par défaut, option « purger après export » dans la Config).

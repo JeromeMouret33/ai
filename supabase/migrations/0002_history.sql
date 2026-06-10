@@ -12,6 +12,10 @@ alter table public.jobs add column if not exists delivered_at timestamptz;
 -- null = encore « à valider » (visible dans Validation).
 alter table public.jobs add column if not exists archived_at timestamptz;
 
+-- Purge : rendus supprimés du stockage app après export Drive (option Config).
+-- non-null = re-téléchargement app impossible, les photos vivent sur le Drive.
+alter table public.jobs add column if not exists purged_at timestamptz;
+
 -- Annulation de génération (flag lu par le traitement en tâche de fond).
 alter table public.jobs add column if not exists cancel_requested boolean not null default false;
 

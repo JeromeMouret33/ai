@@ -17,8 +17,8 @@ import { useToast } from "@/components/Toast";
 import { jobProgress, photoProgress, PhaseSteps } from "@/components/PhaseSteps";
 import { getStoredJobId, setStoredJobId, useJob } from "@/lib/useJob";
 
-// Coût OpenRouter en USD -> estimation EUR (indicative).
-const EUR_PER_USD = 0.92;
+// Coût OpenRouter en USD -> estimation EUR (indicative, taux surchargeable via env).
+const EUR_PER_USD = Number(process.env.NEXT_PUBLIC_EUR_PER_USD ?? "0.92");
 
 function statusTone(status: string): "default" | "ok" | "ko" | "warn" {
   if (["done", "complete", "completed", "delivered"].includes(status)) return "ok";
