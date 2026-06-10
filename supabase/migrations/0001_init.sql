@@ -35,8 +35,6 @@ create table if not exists public.photos (
     cost            double precision not null default 0,   -- coût de la photo (Phase 4)
     usage           jsonb not null default '{}'::jsonb,    -- usage OpenRouter (tokens…)
     target_filename text,                    -- nom de livraison (nomenclature)
-    qc_verdict      text check (qc_verdict in ('ok','ko')),
-    qc_reasons      jsonb not null default '[]'::jsonb,
     kept            boolean not null default false,   -- retenue (galerie de validation)
     status          text not null default 'pending'
                     check (status in ('pending','classified','generated','qc','delivered','error'))

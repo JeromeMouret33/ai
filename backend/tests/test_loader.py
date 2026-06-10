@@ -20,5 +20,6 @@ def test_fragments_have_required_keys():
     frg = load_config()["fragments"]
     for key in ["role", "vehicle_lock", "ref_showroom", "ref_logo", "ref_vehicle",
                 "ref_plate", "task_base", "relight", "plate", "composition",
-                "constraints", "interior", "classify_instruction", "qc_instruction"]:
+                "constraints", "interior", "classify_instruction"]:
         assert key in frg, f"fragment manquant: {key}"
+    assert "qc_instruction" not in frg  # QC retiré

@@ -10,7 +10,7 @@ Routes (préfixe /api) :
     POST /jobs                        crée un job + upload photos + traitement en tâche de fond
     GET  /jobs/{id}                   statut + progression par photo
     POST /jobs/{id}/deliver           livraison Drive de la sélection cochée
-    POST /photos/{id}/retry           relance ciblée d'une photo (QC interactif)
+    POST /photos/{id}/retry           relance ciblée d'une photo
     GET  /history                     générations passées (source Drive)
     DELETE /history/{folder_id}       suppression app + dossier Drive
 
@@ -424,9 +424,8 @@ def retry(photo_id: str, background: BackgroundTasks) -> dict[str, str]:
     """Régénère une photo DEPUIS la source d'origine, en tâche de fond."""
     from backend.jobs import retry_photo
     from backend.storage import supabase as sb
-    # Marque « en cours » tout de suite pour l'UI (efface l'ancien verdict).
-    sb.update("photos", {"id": photo_id},
-              {"status": "pending", "qc_verdict": None, "qc_reasons": []})
+    # Marque « en cours » tout de suite pour l'UI.
+    sb.update("photos", {"id": photo_id}, {"status": "pending"})
     background.add_task(retry_photo, photo_id)
     return {"retry": photo_id}
 

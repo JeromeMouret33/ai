@@ -153,3 +153,10 @@ Coût ≈ 90%+ sur la GÉNÉRATION (Nano Banana Pro). Classification/QC = négli
 
 ## Décisions tranchées récemment
 - Nb de candidats par photo = **1** par défaut (configurable dans l'app).
+
+## Suppression du QC automatique (2026-06-05)
+- [x] Retiré : pipeline `qc.py`, appel QC dans `jobs.py`, `--no-qc` CLI, `models.qc`, fragment `qc_instruction`.
+- [x] Base : migration `0004_remove_qc.sql` (drop `photos.qc_verdict` / `qc_reasons`) + seed 0001 nettoyé. Erreurs persistées dans `usage.error`.
+- [x] Front : phase QC retirée (PhaseSteps 2 phases : Vue/Génération 15/85), drapeau « non conforme » + raisons retirés (Validation/Lightbox), champ modèle QC + prompt QC retirés de Config.
+- [x] Photo terminale = statut `generated`. Validation 100% humaine (visionneuse).
+- [ ] Migration `0004` à lancer en base (Supabase).

@@ -1,6 +1,6 @@
-"""Pipeline génératif : assemblage de prompt, classification, génération, QC, nommage.
+"""Pipeline génératif : assemblage de prompt, classification, génération, nommage.
 
 Ordre logique par photo :
-    classify() -> prompt_builder.build() -> generate() -> qc()
-La décision de relance (en cas de verdict QC négatif) est laissée à l'UI.
+    classify() -> prompt_builder.build() -> generate()
+La validation et la relance sont déclenchées par l'UI (humain).
 """

@@ -39,7 +39,6 @@ const FRAGMENT_KEYS = [
   "constraints",
   "interior",
   "classify_instruction",
-  "qc_instruction",
 ] as const;
 
 const ASSET_TYPES: AssetType[] = ["showroom", "logo", "plate"];
@@ -118,7 +117,6 @@ export default function ConfigPage() {
   const [models, setModels] = useState<ConfigModels>({
     classification: "",
     generation: "",
-    qc: "",
   });
   const [options, setOptions] = useState<ConfigOptions>({
     relight_enabled: false,
@@ -285,8 +283,8 @@ export default function ConfigPage() {
           {/* Modèles */}
           <Card>
             <h2 className="mb-4 text-sm font-semibold">Modèles</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Classification">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Classification (détection d'angle)">
                 <ModelSelect
                   value={models.classification}
                   onChange={(v) => setModels({ ...models, classification: v })}
@@ -303,13 +301,6 @@ export default function ConfigPage() {
                       label: m.label,
                     })) ?? GEN_MODELS
                   }
-                />
-              </Field>
-              <Field label="QC">
-                <ModelSelect
-                  value={models.qc}
-                  onChange={(v) => setModels({ ...models, qc: v })}
-                  options={VISION_MODELS}
                 />
               </Field>
             </div>

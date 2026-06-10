@@ -104,9 +104,8 @@ angle_presets:
     angle: "detail"
     framing: "close-up; neutral background or per decision."
 
-# --- Instructions des agents vision (HORS pack version A — ajout Phase 1, à affiner) ---
-# Utilisées par pipeline/classify.py et pipeline/qc.py. Éditables comme les autres fragments.
-# {ANGLES} est injecté avec la liste des slugs valides au moment de l'appel.
+# --- Instruction de l'agent de classification (vision) ---
+# Utilisée par pipeline/classify.py. {ANGLES} = liste des slugs valides à l'appel.
 
 classify_instruction: |
   You are an automotive photo angle classifier. Look at the single vehicle photo
@@ -123,22 +122,3 @@ classify_instruction: |
     - "detail": close-up of a part (wheel, badge, light…), not a full-car angle.
   "confidence" is your certainty in the chosen slug.
 
-qc_instruction: |
-  You are a strict quality controller for AI-generated automotive showroom photos.
-  Image 1 is the AI-GENERATED showroom photo. Image 2 (if provided) is the ORIGINAL
-  source photo of the vehicle — use it as the reference to judge fidelity.
-  Verify on image 1:
-    1. The showroom background is clean (white matte walls, soft warm light,
-       light-grey floor) with no extra objects, text or people, and the car sits
-       naturally in the room (eye-level perspective, realistic proportions, wheels
-       on the floor).
-    2. The GOODCAR logo (if present) is flat, in its real colours, crisp, legible,
-       undistorted, placed once on the upper-left wall, not overlapping the car.
-    3. The car MATCHES the source vehicle (image 2): same model, paint colour,
-       wheels/rims, grille, badges. ZOOM IN on the headlights and tail lights:
-       their outline and internal LED / light-graphic pattern must match the
-       source — any invented, deformed, simplified or restyled optic is a failure.
-       (A different camera angle or studio lighting than the source is FINE.)
-  Respond with STRICT JSON only, no prose:
-    {"verdict": "ok" | "ko", "reasons": ["<short reason>", ...]}
-  Use "ok" only if every check passes. List concrete reasons for any "ko".

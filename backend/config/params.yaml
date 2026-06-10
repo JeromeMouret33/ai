@@ -6,7 +6,6 @@ parametres:
   models:
     classification: "openai/gpt-4o-mini"             # vision (détection d'angle)
     generation: "google/gemini-3.1-flash-image-preview"  # défaut (Nano Banana 2 Flash)
-    qc: "openai/gpt-4o-mini"                          # vision (contrôle qualité)
 
   # Catalogue des modèles de génération proposés dans le menu déroulant (Config).
   # Ajouter une entrée {label, slug} ici => elle apparaît dans le menu, SANS toucher au code.

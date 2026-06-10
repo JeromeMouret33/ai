@@ -1,10 +1,10 @@
 """Client OpenRouter (API compatible OpenAI).
 
 Une seule clé (`OPENROUTER_API_KEY`) sert les trois rôles ; le modèle est passé
-à chaque appel (lu dans la config par les modules classify / generate / qc).
+à chaque appel (lu dans la config par les modules classify / generate).
 
 Deux usages :
-    - vision_json(model, images, instruction) -> dict   (classification, QC)
+    - vision_json(model, images, instruction) -> dict   (classification)
     - generate_image(model, prompt, images, n) -> list[bytes]  (génération)
 
 httpx est importé paresseusement (dans _post) pour que le parsing des réponses
@@ -60,7 +60,7 @@ def vision_json(
 ) -> dict[str, Any]:
     """Envoie une ou plusieurs images + une instruction, attend une réponse JSON.
 
-    Utilisé par la classification et le contrôle qualité.
+    Utilisé par la classification.
     """
     return vision_json_usage(model, image_paths, instruction, timeout)[0]
 

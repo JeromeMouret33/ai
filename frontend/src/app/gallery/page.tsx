@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, type Photo } from "@/lib/api";
 import {
-  Badge,
   Button,
   Card,
   ErrorBanner,
@@ -121,7 +120,7 @@ export default function GalleryPage() {
     <div>
       <PageTitle
         title="Validation"
-        subtitle="Contrôle qualité + sélection. Rouge = signalé non conforme (à toi de régénérer ou de garder). Coche celles à exporter."
+        subtitle="Ouvre chaque photo en grand pour vérifier, coche celles à garder, puis télécharge ou exporte. Régénère ce qui ne va pas."
       />
 
       {/* Validation = jobs pas encore archivés (à valider). */}
@@ -166,16 +165,11 @@ export default function GalleryPage() {
           <div className="grid grid-cols-2 gap-3 pb-20">
             {photos.map((p, idx) => {
               const checked = !!selected[p.id];
-              const ko = p.qc_verdict === "ko";
               return (
                 <div
                   key={p.id}
                   className={`group relative overflow-hidden rounded-2xl border transition-all ${
-                    checked
-                      ? "border-accent ring-2 ring-accent"
-                      : ko
-                        ? "border-red-500/40"
-                        : "border-border"
+                    checked ? "border-accent ring-2 ring-accent" : "border-border"
                   }`}
                 >
                   {/* Zone image = ouvre la visionneuse. */}
@@ -196,11 +190,6 @@ export default function GalleryPage() {
                         {retrying === p.id ? "Régénération…" : "Aucun aperçu"}
                       </div>
                     )}
-                    {ko ? (
-                      <span className="absolute left-2 top-2 rounded-full bg-red-600/90 px-2 py-0.5 text-[10px] font-bold text-white">
-                        non conforme
-                      </span>
-                    ) : null}
                   </button>
                   {/* Coche = sélection pour export (séparée de l'ouverture). */}
                   <button
@@ -226,22 +215,8 @@ export default function GalleryPage() {
                     >
                       {p.target_filename ?? p.source_name}
                     </p>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {p.angle ? (
-                        <span className="text-[11px] text-muted">{p.angle}</span>
-                      ) : null}
-                      {p.qc_verdict ? (
-                        <Badge tone={p.qc_verdict === "ok" ? "ok" : "ko"}>
-                          {p.qc_verdict}
-                        </Badge>
-                      ) : null}
-                    </div>
-                    {ko && p.qc_reasons && p.qc_reasons.length > 0 ? (
-                      <ul className="list-disc space-y-0.5 pl-4 text-[11px] text-red-300/90">
-                        {p.qc_reasons.slice(0, 3).map((r, i) => (
-                          <li key={i}>{r}</li>
-                        ))}
-                      </ul>
+                    {p.angle ? (
+                      <span className="text-[11px] text-muted">{p.angle}</span>
                     ) : null}
                     <Button
                       variant="secondary"

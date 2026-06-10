@@ -175,7 +175,6 @@ export function Lightbox({
         <p className="truncate text-xs text-zinc-400">
           {photo.angle ? `${photo.angle} · ` : ""}
           {photo.target_filename ?? photo.source_name}
-          {photo.qc_verdict === "ko" ? " · ⚠ non conforme" : ""}
         </p>
         <button
           onClick={() => onToggle(photo.id)}

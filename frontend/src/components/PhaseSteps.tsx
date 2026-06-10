@@ -6,20 +6,19 @@ import type { Photo } from "@/lib/api";
 export type PhaseState = "pending" | "active" | "done" | "warn" | "failed";
 
 interface Phase {
-  key: "classif" | "gen" | "qc";
+  key: "classif" | "gen";
   label: string;
   state: PhaseState;
 }
 
 // Poids relatifs (la génération est de loin la plus longue).
-const WEIGHTS: Record<Phase["key"], number> = { classif: 1, gen: 6, qc: 1 };
+const WEIGHTS: Record<Phase["key"], number> = { classif: 1, gen: 6 };
 const ACTIVE_CREDIT = 0.25; // crédit partiel d'une phase en cours
 
-/** Dérive l'état des 3 phases d'une photo à partir des champs disponibles. */
+/** Dérive l'état des 2 phases d'une photo à partir des champs disponibles. */
 export function photoPhases(p: Photo): Phase[] {
   const angle = !!p.angle;
   const hasCandidate = !!p.candidate_url;
-  const verdict = p.qc_verdict ?? null;
   const errored = p.status === "error";
 
   // 1. Classification (identification de la vue) — rapide.
@@ -28,25 +27,16 @@ export function photoPhases(p: Photo): Phase[] {
   else if (errored) classif = "failed";
   else classif = "active";
 
-  // 2. Génération IA — longue.
+  // 2. Génération IA — longue (terminale : pas de QC).
   let gen: PhaseState;
   if (hasCandidate) gen = "done";
   else if (errored && angle) gen = "failed";
   else if (angle) gen = "active";
   else gen = "pending";
 
-  // 3. Contrôle qualité.
-  let qc: PhaseState;
-  if (verdict === "ok") qc = "done";
-  else if (verdict === "ko") qc = "warn";
-  else if (hasCandidate && errored) qc = "failed";
-  else if (hasCandidate) qc = "active";
-  else qc = "pending";
-
   return [
     { key: "classif", label: "Vue", state: classif },
     { key: "gen", label: "Génération", state: gen },
-    { key: "qc", label: "QC", state: qc },
   ];
 }
 
@@ -59,7 +49,7 @@ export function jobProgress(photos: Photo[]): number {
     for (const ph of photoPhases(p)) {
       const w = WEIGHTS[ph.key];
       total += w;
-      if (ph.state === "done" || ph.state === "warn" || ph.state === "failed") {
+      if (ph.state === "done" || ph.state === "failed") {
         done += w;
       } else if (ph.state === "active") {
         done += w * ACTIVE_CREDIT;
@@ -69,13 +59,13 @@ export function jobProgress(photos: Photo[]): number {
   return Math.round((done / total) * 100);
 }
 
-/** Avancement d'UNE photo (0..100), pondéré : Vue 15 / Génération 65 / QC 20. */
+/** Avancement d'UNE photo (0..100), pondéré : Vue 15 / Génération 85. */
 export function photoProgress(p: Photo): number {
-  const weights: Record<Phase["key"], number> = { classif: 15, gen: 65, qc: 20 };
+  const weights: Record<Phase["key"], number> = { classif: 15, gen: 85 };
   let pct = 0;
   for (const ph of photoPhases(p)) {
     const w = weights[ph.key];
-    if (ph.state === "done" || ph.state === "warn" || ph.state === "failed") {
+    if (ph.state === "done" || ph.state === "failed") {
       pct += w;
     } else if (ph.state === "active") {
       pct += w * 0.5;

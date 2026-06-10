@@ -29,7 +29,6 @@ export interface ConfigFragments {
   constraints?: string;
   interior?: string;
   classify_instruction?: string;
-  qc_instruction?: string;
   angle_presets?: Record<string, AnglePreset>;
   // fragments supplémentaires éventuels
   [key: string]: unknown;
@@ -38,7 +37,6 @@ export interface ConfigFragments {
 export interface ConfigModels {
   classification: string;
   generation: string;
-  qc: string;
 }
 
 export interface ConfigParams {
@@ -117,8 +115,6 @@ export interface ReferenceAsset {
 // --------------------------------------------------------------------------- //
 // Types — Jobs / Photos
 // --------------------------------------------------------------------------- //
-export type QcVerdict = "ok" | "ko" | null;
-
 export interface Photo {
   id: string;
   source_name: string;
@@ -126,8 +122,6 @@ export interface Photo {
   confidence?: number | null;
   candidate_url?: string | null;
   target_filename?: string | null;
-  qc_verdict?: QcVerdict;
-  qc_reasons?: string[];
   kept?: boolean;
   status: string;
 }

@@ -1,9 +1,9 @@
 """Traitement d'un job en tâche de fond (Phase 3 + robustesse Phase 4).
 
 Pour chaque photo : classify -> build prompt -> generate -> upload candidat (bucket
-privé `outputs`, servi via URL signée) -> qc, avec persistance Supabase et **suivi
-des coûts** (usage OpenRouter agrégé). PAS d'auto-relance : le verdict QC est
-enregistré, la relance est déclenchée par l'UI (`retry_photo`).
+privé `outputs`, servi via URL signée), avec persistance Supabase et **suivi des
+coûts** (usage OpenRouter agrégé). Pas de QC automatique : la validation est humaine
+(écran Validation) ; la relance est déclenchée par l'UI (`retry_photo`).
 
 Dépendances réseau (OpenRouter + Supabase) : non testable hors environnement ouvert.
 """
@@ -21,7 +21,6 @@ from backend.pipeline import classify as classify_mod
 from backend.pipeline import cost as cost_mod
 from backend.pipeline import generate as generate_mod
 from backend.pipeline import naming, prompt_builder
-from backend.pipeline import qc as qc_mod
 from backend.storage import supabase as sb
 
 logger = logging.getLogger("showroom.jobs")
@@ -99,24 +98,20 @@ def process_one(
         sb.upload(sb.BUCKET_OUTPUTS, obj_path, images[0], content_type="image/png")
         signed = sb.create_signed_url(sb.BUCKET_OUTPUTS, obj_path, SIGNED_URL_TTL)
 
-        # QC avec la photo SOURCE en 2e image : il peut réellement comparer la fidélité.
-        verdict, qu = qc_mod.qc_usage(signed, config, source_path=photo["path"])
-        usage = cost_mod.merge_usage(usage, qu)
-
+        # Pas de QC automatique : la validation est humaine (écran Validation).
         sb.update("photos", {"id": pid}, {
             "candidate_url": signed, "candidate_path": obj_path,
-            "qc_verdict": verdict["verdict"], "qc_reasons": verdict["reasons"],
             "attempts": int(photo.get("attempts", 0)) + 1,
-            "cost": float(usage.get("cost", 0.0)), "usage": usage, "status": "qc",
+            "cost": float(usage.get("cost", 0.0)), "usage": usage, "status": "generated",
         })
-        logger.info("photo %s : angle=%s qc=%s coût=%.4f",
-                    source, cls["angle"], verdict["verdict"], usage.get("cost", 0.0))
+        logger.info("photo %s : angle=%s généré coût=%.4f",
+                    source, cls["angle"], usage.get("cost", 0.0))
         return cls["angle"], float(usage.get("cost", 0.0))
     except Exception as exc:  # noqa: BLE001 - on isole chaque photo
         logger.exception("photo %s : échec", source)
+        usage["error"] = f"erreur: {exc}"
         sb.update("photos", {"id": pid},
-                  {"status": "error", "qc_reasons": [f"erreur: {exc}"],
-                   "cost": float(usage.get("cost", 0.0)), "usage": usage})
+                  {"status": "error", "cost": float(usage.get("cost", 0.0)), "usage": usage})
         return None, float(usage.get("cost", 0.0))
 
 
@@ -166,7 +161,7 @@ def retry_photo(photo_id: str) -> dict[str, Any]:
     if not photo.get("source_url"):
         sb.update("photos", {"id": photo_id}, {
             "status": "error",
-            "qc_reasons": ["Relance impossible : photo source introuvable (job antérieur)."],
+            "usage": {"error": "Relance impossible : photo source introuvable (job antérieur)."},
         })
         return sb.select("photos", {"id": photo_id})[0]
 
@@ -175,7 +170,7 @@ def retry_photo(photo_id: str) -> dict[str, Any]:
     except Exception as exc:  # noqa: BLE001 - on persiste l'échec pour l'UI
         logger.exception("retry %s : téléchargement source impossible", photo_id)
         sb.update("photos", {"id": photo_id},
-                  {"status": "error", "qc_reasons": [f"Relance impossible : {exc}"]})
+                  {"status": "error", "usage": {"error": f"Relance impossible : {exc}"}})
         return sb.select("photos", {"id": photo_id})[0]
 
     tmp = tempfile.NamedTemporaryFile(suffix=".img", delete=False)

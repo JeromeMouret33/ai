@@ -1,11 +1,10 @@
 """Orchestrateur CLI — cœur génératif Phase 1 (sans interface).
 
 Boucle sur un dossier de photos d'un véhicule :
-    classify -> prompt_builder.build -> generate -> qc
+    classify -> prompt_builder.build -> generate
 Écrit les candidats générés + un manifest.json, et affiche un résumé.
 
-Conformément au SPEC : PAS d'auto-relance (le verdict QC est reporté, la décision
-de relance revient à l'UI en Phase 3) et PAS de livraison Drive (Phase 2).
+Pas de QC automatique ni de livraison Drive : ces étapes vivent dans l'app.
 
 Exemple :
     OPENROUTER_API_KEY=... python -m backend.cli ./photos \
@@ -25,7 +24,6 @@ from backend.config.loader import load_config
 from backend.pipeline import classify as classify_mod
 from backend.pipeline import generate as generate_mod
 from backend.pipeline import naming, prompt_builder
-from backend.pipeline import qc as qc_mod
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 DEFAULT_CONFIG_DIR = Path(__file__).parent / "config"
@@ -88,13 +86,7 @@ def process_folder(args: argparse.Namespace) -> dict[str, Any]:
         for i, img in enumerate(images, start=1):
             cand_path = candidates_dir / f"{photo.stem}_cand{i:02d}.png"
             cand_path.write_bytes(img)
-            cand: dict[str, Any] = {"path": str(cand_path)}
-            if not args.no_qc:
-                try:
-                    cand["qc"] = qc_mod.qc(str(cand_path), config)
-                except Exception as exc:  # noqa: BLE001
-                    cand["qc_error"] = str(exc)
-            entry["candidates"].append(cand)
+            entry["candidates"].append({"path": str(cand_path)})
         results.append(entry)
 
     # Nomenclature lue depuis la config (éditable dans l'app).
@@ -133,10 +125,9 @@ def print_summary(manifest: dict[str, Any]) -> None:
         conf_s = f"{conf:.2f}" if isinstance(conf, float) else "—"
         target = e.get("target_filename", "—")
         n_cand = len(e.get("candidates", []))
-        verdicts = [c.get("qc", {}).get("verdict", "—") for c in e.get("candidates", [])]
         line = f"  {e['source']:<28} angle={angle:<18} conf={conf_s:<5} -> {target}"
         if n_cand:
-            line += f"  [{n_cand} cand, qc={','.join(verdicts)}]"
+            line += f"  [{n_cand} cand]"
         if e["errors"]:
             line += f"  ⚠ {'; '.join(e['errors'])}"
         print(line)
@@ -154,7 +145,6 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--output", default="outputs", help="Dossier de sortie (défaut: outputs).")
     p.add_argument("--config-dir", default=DEFAULT_CONFIG_DIR, type=Path)
     p.add_argument("--classify-only", action="store_true", help="Classer seulement (pas de génération).")
-    p.add_argument("--no-qc", action="store_true", help="Sauter le contrôle qualité.")
     return p
 
 
