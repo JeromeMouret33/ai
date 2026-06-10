@@ -142,6 +142,10 @@ export default function ConfigPage() {
     drive_parent_folder: "",
   });
   const [nomenclature, setNomenclature] = useState({ dossier: "", fichier: "" });
+  const [anglePresets, setAnglePresets] = useState<
+    Record<string, { angle: string; framing: string }>
+  >({});
+  const [savingPresets, setSavingPresets] = useState(false);
   const toast = useToast();
 
   const hydrate = useCallback((cfg: Config) => {
@@ -165,6 +169,14 @@ export default function ConfigPage() {
       dossier: cfg.nomenclature.dossier ?? "",
       fichier: cfg.nomenclature.fichier ?? "",
     });
+    setAnglePresets(
+      Object.fromEntries(
+        Object.entries(cfg.fragments.angle_presets ?? {}).map(([slug, p]) => [
+          slug,
+          { angle: p?.angle ?? "", framing: p?.framing ?? "" },
+        ]),
+      ),
+    );
   }, []);
 
   const load = useCallback(async () => {
@@ -229,6 +241,21 @@ export default function ConfigPage() {
       toast.error(e instanceof Error ? e.message : "Échec de l'enregistrement.");
     } finally {
       setSavingPrompts(false);
+    }
+  };
+
+  // Sauvegarde DÉDIÉE du cadrage par angle (angle_presets — sous-objet des fragments).
+  const savePresets = async () => {
+    setSavingPresets(true);
+    setError(null);
+    try {
+      hydrate(await api.putConfig({ fragments: { angle_presets: anglePresets } }));
+      toast.success("Cadrage par angle enregistré.");
+    } catch (e) {
+      setError(e);
+      toast.error(e instanceof Error ? e.message : "Échec de l'enregistrement.");
+    } finally {
+      setSavingPresets(false);
     }
   };
 
@@ -445,6 +472,61 @@ export default function ConfigPage() {
               className="mt-4 w-full"
             >
               {savingPrompts ? "Enregistrement…" : "Enregistrer les prompts"}
+            </Button>
+          </Card>
+
+          {/* Cadrage par angle — sauvegarde dédiée. `angle` = libellé injecté
+              dans le prompt ({ANGLE}) ; `framing` = consigne de cadrage ({FRAMING_PRESET}). */}
+          <Card>
+            <h2 className="mb-1 text-sm font-semibold">Cadrage par angle</h2>
+            <p className="mb-4 text-xs text-muted">
+              Pour chaque vue : l&apos;angle ({"{ANGLE}"}) et la consigne de cadrage
+              ({"{FRAMING_PRESET}"}) injectés dans le prompt.
+            </p>
+            <div className="space-y-4">
+              {Object.entries(anglePresets).map(([slug, p]) => (
+                <div
+                  key={slug}
+                  className="rounded-xl border border-border bg-surface-2/40 p-3"
+                >
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+                    {slug}
+                  </p>
+                  <div className="grid gap-3 sm:grid-cols-[1fr_2fr]">
+                    <Field label="Angle">
+                      <input
+                        className={inputClass}
+                        value={p.angle}
+                        onChange={(e) =>
+                          setAnglePresets({
+                            ...anglePresets,
+                            [slug]: { ...p, angle: e.target.value },
+                          })
+                        }
+                      />
+                    </Field>
+                    <Field label="Cadrage">
+                      <textarea
+                        className={`${inputClass} min-h-16 text-xs`}
+                        value={p.framing}
+                        onChange={(e) =>
+                          setAnglePresets({
+                            ...anglePresets,
+                            [slug]: { ...p, framing: e.target.value },
+                          })
+                        }
+                      />
+                    </Field>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button
+              onClick={savePresets}
+              disabled={savingPresets}
+              className="mt-4 w-full"
+            >
+              {savingPresets ? "Enregistrement…" : "Enregistrer le cadrage"}
             </Button>
           </Card>
         </>
