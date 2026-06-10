@@ -20,10 +20,11 @@ def test_exterior_assembly_roles_and_substitution():
     assert "front 3/4 left" in built.text
     assert "3:2" in built.text
     assert "1K" in built.text
-    # Fragments présents.
-    assert "compositor" in built.text
+    # Fragments présents (v2).
+    assert "professional automotive studio photograph" in built.text
     assert "SHOWROOM image" in built.text
-    assert "eye level" in built.text
+    assert "eye-level" in built.text
+    assert "HARD RULES" in built.text
 
 
 def test_plate_toggle_off_excludes_plate():
@@ -36,7 +37,7 @@ def test_plate_toggle_off_excludes_plate():
 def test_relight_toggle_off_excludes_relight():
     cfg = _cfg()
     built = prompt_builder.build("face-avant", {"relight_enabled": False, "plate_enabled": False}, cfg)
-    assert "remove sun hotspots and harsh shadows" not in built.text
+    assert "Give the car the studio look" not in built.text
 
 
 def test_interior_assembly_minimal():

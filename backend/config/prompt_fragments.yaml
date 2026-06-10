@@ -1,33 +1,32 @@
 # Fragments de prompt modulaires — éditables dans l'app.
 # Doc humain canonique : ../../prompts-config-goodcar.md (§2). Garder les deux synchro.
-# L'assembleur (pipeline/prompt_builder.py) concatène les fragments selon l'angle
-# (extérieur / intérieur) et les options actives — logique en §3 du doc.
-# Variables injectées au moment de l'assemblage :
-#   {ANGLE}, {FRAMING_PRESET}, {LOGO_POSITION_SIZE}, {RATIO}, {RESOLUTION}.
+# Philosophie v2 : description positive d'UNE photographie cohérente ; les interdits
+# sont concentrés dans `constraints` (un seul bloc), jamais répétés ailleurs.
+# Variables injectées : {ANGLE}, {FRAMING_PRESET}, {LOGO_POSITION_SIZE}, {RATIO}, {RESOLUTION}.
 
 role: |
-  Professional automotive studio photographer and compositor.
+  You are creating one coherent, professional automotive studio photograph.
 
 vehicle_lock: |
-  Reproduce THIS exact car faithfully: same model, trim, body colour, wheels/rims,
-  headlights and tail lights, grille, badges and lettering — it must clearly be the
-  same vehicle. Copy the headlights and tail lights EXACTLY: keep their outline and
-  their internal LED / light-graphic pattern faithful to the source — do not redraw,
-  reshape, simplify, smooth out or reinvent the optics. You MAY re-photograph it from
-  the showroom's natural eye-level camera at the requested angle; you do NOT have to
-  copy the source photo's viewpoint or perspective. Keep its design and proportions
-  believable and consistent; do not turn it into a different model or restyle it.
+  The vehicle image shows the exact, real car being sold. Your photograph must show
+  this same physical car, faithfully: same model and trim, same paint colour, same
+  wheels and rims, same grille, badges and lettering, and the same headlights and
+  tail lights — reproduce their outline and internal LED / light-graphic pattern
+  exactly as in the source. You are photographing a real object, not reinterpreting
+  a design. You may photograph it from the showroom's natural eye-level camera at
+  the requested angle — the viewpoint may differ from the source photo. Where the
+  source is unclear or low quality, reproduce it as-is.
 
 ref_showroom: |
-  Reproduce the SHOWROOM image faithfully: same white matte walls and corner, soft
-  warm lighting, light-grey floor with a subtle reflection. Do not redesign,
-  recolour, relight or move the environment.
+  SHOWROOM image: the exact environment of the photograph — same white matte walls
+  and corner, soft warm lighting, light-grey floor with a subtle reflection. The
+  environment looks identical on every generation.
 
 ref_logo: |
-  Place the GOODCAR logo (logo image) on the upper-left wall as a FLAT sign in its
-  real colours — same shapes, text and colours, correct aspect ratio, crisp and
-  legible. Not a monochrome engraving, not tinted to the wall colour.
-  Position: {LOGO_POSITION_SIZE}.
+  LOGO image: the GOODCAR brand sign, mounted FLAT on the upper-left wall in its
+  real colours — same shapes, text, colours and aspect ratio, crisp and legible.
+  It reads as a printed sign in the brand's own colours (not an engraving, never
+  tinted to match the wall). Position: {LOGO_POSITION_SIZE}.
 
 ref_vehicle: |
   VEHICLE image — the exact car to feature.
@@ -36,16 +35,18 @@ ref_plate: |
   PLATE image — the GOODCAR license plate to apply to the vehicle.
 
 task_base: |
-  Place the car inside the showroom as a real photo taken on location, shown at:
-  {ANGLE}. Photograph it at natural eye level, with realistic proportions relative
-  to the room, wheels firmly on the floor, a soft contact shadow and a subtle
-  reflection on the floor. Use the showroom's soft, even, slightly warm studio
-  light, and remove the source photo's sun glare, blown highlights and harsh shadows.
+  Photograph the car inside the showroom as a real photo taken on location, shown
+  at: {ANGLE}. Natural eye-level camera, realistic proportions relative to the
+  room, wheels firmly on the floor, with a soft contact shadow under the tires and
+  a subtle reflection of the car on the floor. The showroom's soft, even, slightly
+  warm studio light falls naturally on the car.
 
 relight: |
-  Even out the lighting and remove sun hotspots and harsh shadows on the smooth body
-  panels and side/rear glass, matching the soft studio light. Do not change the
-  paint colour, and do not alter the lights, wheels, grille or badges.
+  Give the car the studio look: even out the source photo's sun glare, blown
+  highlights and harsh shadows on the smooth body panels and side/rear glass,
+  replacing them with the showroom's gentle, even highlights. This adjusts how
+  light falls on the car — what the car is (its shapes, colours and components)
+  stays exactly as in the vehicle image.
 
 plate: |
   Replace the visible license plate(s) with the plate from the plate image, fitted
@@ -55,15 +56,19 @@ composition: |
   COMPOSITION ({ANGLE}): {FRAMING_PRESET}
 
 constraints: |
-  Output {RATIO}, {RESOLUTION}, photoreal and clean. Keep the showroom identical to
-  the showroom image. It must clearly remain the same car (model, colour, wheels,
-  lights, badges). No added text, watermark, people or extra objects.
+  HARD RULES:
+  - Same car throughout: model, paint colour, wheels, grille, badges, and the
+    exact original headlight / tail light patterns.
+  - Showroom identical to the showroom image; nothing moved, recoloured or added.
+  - Logo exactly as provided: once, flat, real colours, undistorted.
+  - No added text, watermarks, people or extra objects.
+  - Output {RATIO}, {RESOLUTION}, photoreal, clean.
 
 interior: |
-  INTERIOR: Keep the cabin from the vehicle image exactly as-is; do not place it in
-  a showroom, do not add the logo, do not relight. Only replace what is visible
-  through the windows with clean, evenly blown-out white. Preserve all interior
-  details, materials and colors. Do NOT redraw or restyle any part of the interior.
+  INTERIOR: this is a cabin photograph — reproduce the cabin exactly as in the
+  vehicle image, with all interior details, materials and colours as-is. The only
+  change: everything visible through the windows becomes clean, evenly blown-out
+  white. No showroom, no logo, no relighting.
 
 # Presets de cadrage par angle (doc §6). slug -> { angle: {ANGLE}, framing: {FRAMING_PRESET} }.
 # La classification renvoie un slug ; l'assembleur injecte angle + framing dans `composition`.
