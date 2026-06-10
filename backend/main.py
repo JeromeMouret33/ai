@@ -158,10 +158,19 @@ def get_config() -> dict[str, Any]:
 
 @protected.put("/api/config")
 def put_config(patch: ConfigPatch) -> dict[str, Any]:
-    if patch.params:
-        editor.update_params(patch.params)
-    if patch.fragments:
-        editor.update_fragments(patch.fragments)
+    from backend.config import store
+    if store.enabled():
+        # Persistance en base : survit aux déploiements.
+        if patch.params:
+            store.save_override("params", patch.params)
+        if patch.fragments:
+            store.save_override("fragments", patch.fragments)
+    else:
+        # Dev local sans Supabase : repli sur l'édition des fichiers YAML.
+        if patch.params:
+            editor.update_params(patch.params)
+        if patch.fragments:
+            editor.update_fragments(patch.fragments)
     return load_config()
 
 

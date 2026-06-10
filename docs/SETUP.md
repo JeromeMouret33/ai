@@ -24,8 +24,10 @@ Modèles utilisés (déjà dans `backend/config/params.yaml`, éditables dans l'
 ## 2. Supabase (indispensable)
 
 1. Créer un projet sur https://supabase.com.
-2. **Schéma** : SQL Editor → coller le contenu de `supabase/migrations/0001_init.sql` → **Run**.
-   Ça crée les tables `jobs`, `photos`, `reference_assets` **et** les buckets `references`, `uploads`, `outputs`.
+2. **Schéma** : SQL Editor → exécuter **dans l'ordre** :
+   `0001_init.sql` (tables + buckets + RLS), `0002_history.sql` (client, archivage,
+   annulation, purge), `0003_config.sql` (persistance de la config en base).
+   Migrations idempotentes : ré-exécutables sans risque.
 3. Vérifier les buckets : Storage → `references` **public** ; `uploads` et `outputs` **privés**
    (le SQL les crée déjà ainsi). Les rendus sont servis via **URLs signées**, ne pas
    rendre `outputs`/`uploads` publics (exposerait rendus et photos sources).
