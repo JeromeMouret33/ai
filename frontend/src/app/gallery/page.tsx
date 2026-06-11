@@ -218,6 +218,11 @@ export default function GalleryPage() {
                     {p.angle ? (
                       <span className="text-[11px] text-muted">{p.angle}</span>
                     ) : null}
+                    {p.status === "error" && p.usage?.error ? (
+                      <p className="break-words text-[11px] leading-snug text-red-400">
+                        {p.usage.error}
+                      </p>
+                    ) : null}
                     <Button
                       variant="secondary"
                       className="min-h-9 w-full py-1.5 text-xs"

@@ -124,6 +124,8 @@ export interface Photo {
   target_filename?: string | null;
   kept?: boolean;
   status: string;
+  // `usage` jsonb : métriques OpenRouter + `error` (message d'échec mis en forme).
+  usage?: { error?: string } & Record<string, unknown>;
 }
 
 export interface Job {

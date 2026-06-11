@@ -383,6 +383,11 @@ export default function GenerationPage() {
                         {p.angle ? `${p.angle} · ` : ""}
                         {photoProgress(p)}%
                       </p>
+                      {p.status === "error" && p.usage?.error ? (
+                        <p className="mt-1 break-words text-[11px] leading-snug text-red-400">
+                          {p.usage.error}
+                        </p>
+                      ) : null}
                     </div>
                     <PhaseSteps photo={p} />
                   </div>

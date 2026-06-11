@@ -35,6 +35,30 @@ def _is_cancelled(job_id: str) -> bool:
     return bool(rows and rows[0].get("cancel_requested"))
 
 
+def _format_error(exc: Exception) -> str:
+    """Met en forme une exception de pipeline en message lisible pour l'UI.
+
+    On traduit les cas connus (clé manquante, quota/débit, réponse vide, timeout)
+    en une phrase claire ; sinon on renvoie le message brut, tronqué.
+    """
+    msg = str(exc).strip()
+    low = msg.lower()
+    if "openrouter_api_key" in low:
+        return "Clé OpenRouter absente ou invalide (vérifier la configuration serveur)."
+    if "aucune image" in low:
+        return "Le modèle n'a renvoyé aucune image. Réessayer ou changer de modèle."
+    if "429" in low or "rate" in low or "quota" in low:
+        return "Limite OpenRouter atteinte (quota ou débit). Réessayer dans un instant."
+    if "401" in low or "403" in low:
+        return "Accès OpenRouter refusé (clé ou crédits). Vérifier le compte."
+    if "timeout" in low or "timed out" in low:
+        return "Délai dépassé pendant la génération. Réessayer."
+    if "réseau" in low or "network" in low:
+        return "Échec réseau pendant l'appel au modèle. Réessayer."
+    # Cas générique : message brut tronqué pour rester affichable.
+    return msg[:300] if msg else "Erreur inconnue pendant la génération."
+
+
 def _active_reference_urls() -> dict[str, str]:
     """URLs publiques des assets actifs (showroom / logo / plaque)."""
     refs: dict[str, str] = {}
@@ -84,6 +108,7 @@ def process_one(
         sb.update("photos", {"id": pid},
                   {"angle": cls["angle"], "confidence": cls["confidence"], "status": "classified"})
         if cls["angle"] is None:
+            usage["error"] = "Angle non reconnu (photo ambiguë ou de mauvaise qualité)."
             sb.update("photos", {"id": pid},
                       {"status": "error", "cost": usage.get("cost", 0.0), "usage": usage})
             logger.info("photo %s : angle non reconnu", source)
@@ -109,7 +134,7 @@ def process_one(
         return cls["angle"], float(usage.get("cost", 0.0))
     except Exception as exc:  # noqa: BLE001 - on isole chaque photo
         logger.exception("photo %s : échec", source)
-        usage["error"] = f"erreur: {exc}"
+        usage["error"] = _format_error(exc)
         sb.update("photos", {"id": pid},
                   {"status": "error", "cost": float(usage.get("cost", 0.0)), "usage": usage})
         return None, float(usage.get("cost", 0.0))
@@ -170,7 +195,8 @@ def retry_photo(photo_id: str) -> dict[str, Any]:
     except Exception as exc:  # noqa: BLE001 - on persiste l'échec pour l'UI
         logger.exception("retry %s : téléchargement source impossible", photo_id)
         sb.update("photos", {"id": photo_id},
-                  {"status": "error", "usage": {"error": f"Relance impossible : {exc}"}})
+                  {"status": "error",
+                   "usage": {"error": f"Relance impossible : {_format_error(exc)}"}})
         return sb.select("photos", {"id": photo_id})[0]
 
     tmp = tempfile.NamedTemporaryFile(suffix=".img", delete=False)

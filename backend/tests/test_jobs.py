@@ -38,3 +38,16 @@ def test_refresh_job_names_skips_unchanged(monkeypatch):
 
     jobs._refresh_job_names({"id": "j1", "marque": "Peugeot", "modele": "208"}, {})
     assert updates == {}  # nom déjà correct -> aucun write inutile
+
+
+def test_format_error_maps_known_cases():
+    assert "Clé OpenRouter" in jobs._format_error(Exception("OPENROUTER_API_KEY manquante"))
+    assert "aucune image" in jobs._format_error(Exception("Aucune image dans la réponse")).lower()
+    assert "Limite" in jobs._format_error(Exception("OpenRouter 429: rate limit"))
+    assert "refusé" in jobs._format_error(Exception("OpenRouter 401: invalid key"))
+
+
+def test_format_error_truncates_and_falls_back():
+    assert jobs._format_error(Exception("")) == "Erreur inconnue pendant la génération."
+    long = "x" * 500
+    assert len(jobs._format_error(Exception(long))) == 300
