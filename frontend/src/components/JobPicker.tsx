@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api, type Job } from "@/lib/api";
 import { Button, inputClass } from "@/components/ui";
 import { useToast } from "@/components/Toast";
+import { useConfirm } from "@/components/Confirm";
 import { setStoredJobId } from "@/lib/useJob";
 
 /** Étiquette lisible d'un traitement : Client · Véhicule. */
@@ -24,6 +25,7 @@ export function JobPicker({
   filter?: (j: Job) => boolean;
 }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
@@ -59,12 +61,13 @@ export function JobPicker({
 
   const removeSelected = async () => {
     if (!selected) return;
-    if (
-      !window.confirm(
-        `Supprimer définitivement « ${jobLabel(selected)} » (rendus inclus) ?`,
-      )
-    )
-      return;
+    const ok = await confirm({
+      title: "Supprimer ce traitement ?",
+      message: `« ${jobLabel(selected)} » sera supprimé définitivement (rendus inclus).`,
+      confirmLabel: "Supprimer",
+      danger: true,
+    });
+    if (!ok) return;
     setDeleting(true);
     try {
       await api.deleteJob(selected.id);

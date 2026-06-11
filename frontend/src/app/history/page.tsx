@@ -13,9 +13,11 @@ import {
 } from "@/components/ui";
 import { jobLabel } from "@/components/JobPicker";
 import { useToast } from "@/components/Toast";
+import { useConfirm } from "@/components/Confirm";
 
 export default function HistoryPage() {
   const toast = useToast();
+  const confirm = useConfirm();
   const [jobs, setJobs] = useState<Job[] | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
@@ -74,13 +76,13 @@ export default function HistoryPage() {
   };
 
   const remove = async (j: Job) => {
-    if (
-      !window.confirm(
-        `Supprimer définitivement « ${jobLabel(j)} » de l'application (rendus inclus) ?`,
-      )
-    ) {
-      return;
-    }
+    const ok = await confirm({
+      title: "Supprimer ce traitement ?",
+      message: `« ${jobLabel(j)} » sera supprimé définitivement de l'application (rendus inclus).`,
+      confirmLabel: "Supprimer",
+      danger: true,
+    });
+    if (!ok) return;
     setDeleting(j.id);
     try {
       await api.deleteJob(j.id);

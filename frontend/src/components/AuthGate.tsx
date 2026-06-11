@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { ToastProvider } from "@/components/Toast";
+import { ConfirmProvider } from "@/components/Confirm";
 import { Spinner } from "@/components/ui";
 import {
   authEnabled,
@@ -104,5 +105,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
     content = <Shell>{children}</Shell>;
   }
 
-  return <ToastProvider>{content}</ToastProvider>;
+  return (
+    <ToastProvider>
+      <ConfirmProvider>{content}</ConfirmProvider>
+    </ToastProvider>
+  );
 }
