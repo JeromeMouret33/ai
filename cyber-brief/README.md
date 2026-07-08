@@ -14,7 +14,7 @@ OIV/OSE, collectivités ; zone prioritaire océan Indien).
 
 | Bloc | v1 | v2 |
 |---|---|---|
-| Tête | SITREP : jauge de menace + KPI bruts (nb vulns, nb victimes…) — **bruit** | **« À porter en réunion cette semaine »** : 3 points d'ouverture (exigence / contrôle / échéance) + frise des échéances réglementaires |
+| Tête | SITREP : jauge de menace + KPI bruts (nb vulns, nb victimes…) — **bruit** | **Édito « Le fil de la semaine »** : 2-4 phrases qui *relient* les 5 sujets (le liant analytique), sans les répéter |
 | Sujet 01 | « Vulnérabilité · exploitation active » (large) | **« À patcher cette semaine »** : strictement CISA KEV, actif courant exposé Internet, non nicher |
 | Sujet 02 | Ransomware (liste de victimes) | Ransomware : **exemple de fuite** (traqueurs bonjourlafuite/ransomware.live) + **topo mode opératoire** du groupe le plus actif |
 | Sujet 03 | Menace émergente / IA | Inchangé (framing « analyse / signal fort ») |

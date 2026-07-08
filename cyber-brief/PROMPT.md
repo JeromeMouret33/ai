@@ -73,20 +73,25 @@ de revue :
 
 ## CADRAGE SECTION PAR SECTION
 
-### Bandeau d'ouverture — « À porter en réunion cette semaine »
+### Édito — « Le fil de la semaine »
 *(remplace l'ancien bloc SITREP / gauge / KPI)*
 
-Objectif : 3 à 4 **points d'ouverture de réunion** + une mini-frise des
-**échéances réglementaires**. Pas de compteurs.
+Objectif : **une seule accroche éditoriale de 2 à 4 phrases** qui **relie les
+5 sujets entre eux** — le liant analytique de l'édition. Pas de compteurs,
+et surtout **pas de reprise des sujets un par un** (ce serait de la redite
+avec les blocs qui suivent).
 
-- **Points d'ouverture (3–4 max)** : une phrase chacun, formulée pour être
-  dite en réunion. Chaque point est soit une **exigence** (ce que le client
-  doit pouvoir faire), soit un **contrôle** (ce qu'il faut vérifier), soit une
-  **échéance** (ce qui tombe bientôt). Exemple de forme : *« Sauriez-vous
-  notifier une vulnérabilité activement exploitée sous 24 h ? Le CRA
-  l'impose au 11 septembre. »*
-- **Échéances réglementaires** : 2–3 dates à venir (CRA, NIS2, DORA…) avec
-  le nombre de jours restants et l'objet en une ligne.
+- Se placer à une **altitude différente des sujets** : nommer le fil
+  conducteur commun (ex. « le risque entre par les tiers et se mesure en
+  heures », « la semaine des accès périmétriques », « conformité vs
+  exploitation active »…), pas répéter chaque titre.
+- Ton d'analyste : c'est l'angle que le consultant peut reprendre pour
+  ouvrir sa réunion. Une idée forte, mémorisable.
+- Les sujets peuvent être **évoqués en incise** (numéro entre parenthèses)
+  pour montrer le fil, mais jamais re-décrits.
+- **Interdit** : lister des « points d'ouverture » qui dupliquent les sujets,
+  ou remettre une frise d'échéances (l'échéance réglementaire vit dans le
+  sujet 04).
 
 ### Sujet 01 — Vulnérabilité · Exploitation active : « À patcher cette semaine »
 

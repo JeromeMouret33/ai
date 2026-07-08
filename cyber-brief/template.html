@@ -80,90 +80,28 @@
   }
   .masthead .subline b{color:#fff;font-weight:600;}
 
-  /* ---------- Bandeau d'ouverture (remplace le SITREP/KPI) ---------- */
-  .opener{
-    padding:26px 44px 30px;
+  /* ---------- Édito : le fil de la semaine ---------- */
+  .edito{
+    padding:24px 44px 26px;
     border-bottom:1px solid var(--line);
+    border-left:3px solid var(--accent);
   }
-  .opener-label{
+  .edito-label{
     font-family:var(--font-mono);
     font-size:11px;
     letter-spacing:.2em;
     text-transform:uppercase;
-    color:var(--ink-soft);
-    margin:0 0 16px;
-  }
-  .talkpoints{
-    display:grid;
-    gap:1px;
-    background:var(--line);
-    border:1px solid var(--line);
-    border-radius:6px;
-    overflow:hidden;
-    margin-bottom:22px;
-  }
-  .tp{
-    background:var(--card);
-    padding:14px 16px 14px 18px;
-    display:grid;
-    grid-template-columns:auto 1fr;
-    gap:14px;
-    align-items:start;
-    border-left:3px solid var(--accent);
-  }
-  .tp .tp-kind{
-    font-family:var(--font-mono);
-    font-size:10px;
-    font-weight:700;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:#fff;
-    background:var(--accent);
-    padding:3px 8px;
-    border-radius:3px;
-    white-space:nowrap;
-    margin-top:1px;
-  }
-  .tp .tp-kind.ctrl{background:var(--accent-deep);}
-  .tp .tp-kind.echo{background:var(--sev-med);}
-  .tp .tp-body{font-size:15px;}
-  .tp .tp-body b{font-weight:600;}
-
-  .deadlines-label{
-    font-family:var(--font-mono);
-    font-size:10.5px;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
+    color:var(--accent-deep);
     margin:0 0 10px;
   }
-  .deadlines{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:1px;
-    background:var(--line);
-    border:1px solid var(--line);
-    border-radius:6px;
-    overflow:hidden;
+  .edito p{
+    font-size:17px;
+    line-height:1.55;
+    margin:0;
+    color:var(--ink);
+    max-width:760px;
   }
-  .dl{background:var(--card);padding:13px 15px;}
-  .dl .dl-days{
-    font-family:var(--font-mono);
-    font-size:22px;
-    font-weight:600;
-    line-height:1;
-    color:var(--sev-high);
-  }
-  .dl .dl-days small{
-    font-size:11px;
-    font-weight:600;
-    color:var(--ink-soft);
-    letter-spacing:.06em;
-    text-transform:uppercase;
-  }
-  .dl .dl-what{font-size:13px;margin-top:7px;line-height:1.4;}
-  .dl .dl-what b{font-weight:600;}
-  .dl .dl-date{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+  .edito p b{font-weight:600;}
 
   /* ---------- Topics ---------- */
   main{padding:8px 44px 0;}
@@ -473,10 +411,9 @@
 
   /* ---------- Responsive ---------- */
   @media (max-width:720px){
-    .masthead,.opener,.veille,.annex,.missions,.deepdive,footer{padding-left:22px;padding-right:22px;}
+    .masthead,.edito,.veille,.annex,.missions,.deepdive,footer{padding-left:22px;padding-right:22px;}
     main{padding-left:22px;padding-right:22px;}
     .masthead h1{font-size:27px;}
-    .deadlines{grid-template-columns:1fr;}
     .experts{grid-template-columns:1fr;}
     .mgrid{grid-template-columns:1fr;}
     .watch-item{grid-template-columns:1fr;gap:4px;}
@@ -510,43 +447,10 @@
     </div>
   </header>
 
-  <!-- ======= BANDEAU D'OUVERTURE (remplace SITREP/KPI) ======= -->
-  <section class="opener">
-    <p class="opener-label">À porter en réunion cette semaine</p>
-
-    <div class="talkpoints">
-      <div class="tp">
-        <span class="tp-kind echo">Échéance</span>
-        <div class="tp-body">« Sauriez-vous <b>notifier une vulnérabilité activement exploitée sous 24 h</b> ? » — le Cyber Resilience Act l'impose à tout fabricant de produit numérique à partir du 11 septembre 2026. Peu de clients ont aujourd'hui le processus.</div>
-      </div>
-      <div class="tp">
-        <span class="tp-kind ctrl">Contrôle</span>
-        <div class="tp-body">« <b>Avez-vous l'inventaire des outils RMM/télémaintenance de vos prestataires et leur statut de correctif ?</b> » — une faille CVSS 10 sur SimpleHelp est activement exploitée pour rebondir de l'infogérant vers tous ses clients (mesure ISO 5.19-5.23).</div>
-      </div>
-      <div class="tp">
-        <span class="tp-kind">Exigence</span>
-        <div class="tp-body">« <b>La vitesse de détection est devenue un facteur de risque en soi.</b> » — première attaque ransomware documentée comme pilotée de bout en bout par une IA autonome : à intégrer comme scénario EBIOS RM.</div>
-      </div>
-    </div>
-
-    <p class="deadlines-label">Échéances réglementaires à l'horizon</p>
-    <div class="deadlines">
-      <div class="dl">
-        <div class="dl-days">67<small> j</small></div>
-        <div class="dl-what"><b>CRA</b> — signalement des vulnérabilités activement exploitées sous 24 h (alerte précoce).</div>
-        <div class="dl-date">11 septembre 2026</div>
-      </div>
-      <div class="dl">
-        <div class="dl-days">~18<small> mois</small></div>
-        <div class="dl-what"><b>CRA</b> — exigences essentielles &amp; marquage CE (à ne pas confondre avec l'échéance 24 h).</div>
-        <div class="dl-date">11 décembre 2027</div>
-      </div>
-      <div class="dl">
-        <div class="dl-days">En cours</div>
-        <div class="dl-what"><b>NIS2</b> — transposition FR &amp; référentiel ANSSI ReCyF disponible en base d'audit.</div>
-        <div class="dl-date">Applicable</div>
-      </div>
-    </div>
+  <!-- ======= ÉDITO — LE FIL DE LA SEMAINE ======= -->
+  <section class="edito">
+    <p class="edito-label">Le fil de la semaine</p>
+    <p>Cette semaine, les cinq sujets racontent la même histoire : <b>le risque entre désormais par les tiers, et se mesure en heures.</b> Un outil d'infogérance compromis qui donne accès à tout un parc client (01), un ransomware qui rebondit de filiale en filiale (02), une attaque de bout en bout pilotée par une IA autonome (03) et une échéance CRA qui exige de notifier sous 24 h (04) : le maillon fournisseur et la vitesse de réaction sont devenus l'axe de risque central — bien plus que le décompte de vulnérabilités.</p>
   </section>
 
   <!-- ======= 5 SUJETS ======= -->
