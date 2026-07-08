@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brief cyber hebdomadaire</title>
+<style>
+  :root{
+    --ink:#16232f;
+    --ink-soft:#41525f;
+    --paper:#e9edf0;
+    --card:#ffffff;
+    --line:#d2dbe1;
+    --line-strong:#b7c3cb;
+    --accent:#1f6f8b;
+    --accent-deep:#134f63;
+    --sev-low:#2f7d5b;
+    --sev-med:#bf7d1e;
+    --sev-high:#b0343a;
+    --sev-crit:#7d1f2b;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sheet{
+    max-width:940px;
+    margin:0 auto;
+    background:var(--card);
+    box-shadow:0 1px 3px rgba(22,35,47,.08),0 12px 40px rgba(22,35,47,.10);
+  }
+
+  a{color:var(--accent-deep);text-decoration:none;border-bottom:1px solid rgba(31,111,139,.35);}
+  a:hover{border-bottom-color:var(--accent-deep);}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    background:var(--ink);
+    color:#fff;
+    padding:30px 44px 26px;
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:#8fb9c8;
+    margin:0 0 14px;
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .masthead h1{
+    font-size:34px;
+    line-height:1.1;
+    margin:0;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  .masthead .subline{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:#c3d2da;
+    margin-top:12px;
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+  }
+  .masthead .subline b{color:#fff;font-weight:600;}
+
+  /* ---------- Bandeau d'ouverture (remplace le SITREP/KPI) ---------- */
+  .opener{
+    padding:26px 44px 30px;
+    border-bottom:1px solid var(--line);
+  }
+  .opener-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 16px;
+  }
+  .talkpoints{
+    display:grid;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  .tp{
+    background:var(--card);
+    padding:14px 16px 14px 18px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:14px;
+    align-items:start;
+    border-left:3px solid var(--accent);
+  }
+  .tp .tp-kind{
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#fff;
+    background:var(--accent);
+    padding:3px 8px;
+    border-radius:3px;
+    white-space:nowrap;
+    margin-top:1px;
+  }
+  .tp .tp-kind.ctrl{background:var(--accent-deep);}
+  .tp .tp-kind.echo{background:var(--sev-med);}
+  .tp .tp-body{font-size:15px;}
+  .tp .tp-body b{font-weight:600;}
+
+  .deadlines-label{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 10px;
+  }
+  .deadlines{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .dl{background:var(--card);padding:13px 15px;}
+  .dl .dl-days{
+    font-family:var(--font-mono);
+    font-size:22px;
+    font-weight:600;
+    line-height:1;
+    color:var(--sev-high);
+  }
+  .dl .dl-days small{
+    font-size:11px;
+    font-weight:600;
+    color:var(--ink-soft);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .dl .dl-what{font-size:13px;margin-top:7px;line-height:1.4;}
+  .dl .dl-what b{font-weight:600;}
+  .dl .dl-date{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Topics ---------- */
+  main{padding:8px 44px 0;}
+  .topic{
+    padding:30px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .topic-top{
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:14px;
+  }
+  .t-num{
+    font-family:var(--font-mono);
+    font-size:34px;
+    font-weight:600;
+    line-height:.9;
+    color:var(--line-strong);
+    min-width:52px;
+  }
+  .t-head{flex:1;}
+  .t-cat{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    margin:0 0 7px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .sev{
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#fff;
+    padding:2px 8px;
+    border-radius:3px;
+  }
+  .sev.low{background:var(--sev-low);}
+  .sev.med{background:var(--sev-med);}
+  .sev.high{background:var(--sev-high);}
+  .sev.crit{background:var(--sev-crit);}
+  .topic h2{
+    font-size:22px;
+    line-height:1.25;
+    margin:0;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  .topic figure{
+    margin:16px 0;
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+    background:var(--paper);
+  }
+  .topic figure img{display:block;width:100%;height:auto;}
+  .topic figure figcaption{
+    font-size:12px;
+    color:var(--ink-soft);
+    padding:9px 14px;
+    border-top:1px solid var(--line);
+    font-style:italic;
+  }
+  .topic h3{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:20px 0 7px;
+  }
+  .topic p{margin:0 0 12px;}
+  .why{
+    border-left:3px solid var(--accent);
+    background:rgba(31,111,139,.055);
+    padding:13px 16px;
+    border-radius:0 5px 5px 0;
+    margin:6px 0 4px;
+  }
+  .why p{margin:0;}
+  .actions{margin:6px 0 0;padding-left:0;list-style:none;}
+  .actions li{
+    position:relative;
+    padding-left:22px;
+    margin-bottom:7px;
+    font-size:15px;
+  }
+  .actions li::before{
+    content:"→";
+    position:absolute;
+    left:0;
+    color:var(--accent);
+    font-weight:600;
+  }
+  /* Encart « topo » (mode opératoire d'un groupe) */
+  .topo{
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:var(--paper);
+    padding:14px 16px;
+    margin:8px 0 4px;
+  }
+  .topo h4{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    margin:0 0 10px;
+  }
+  .topo dl{margin:0;display:grid;grid-template-columns:150px 1fr;gap:6px 14px;}
+  .topo dt{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);}
+  .topo dd{margin:0;font-size:14.5px;}
+  .sources{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:16px;
+  }
+  .sources span{text-transform:uppercase;letter-spacing:.1em;margin-right:8px;}
+
+  /* ---------- Focus thématique (avis d'experts) ---------- */
+  .deepdive{
+    padding:30px 44px;
+    border-bottom:1px solid var(--line);
+    background:#eef5f6;
+  }
+  .deepdive h2{
+    font-size:24px;
+    margin:0 0 10px;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  .deepdive-intro{
+    font-size:15px;
+    color:var(--ink-soft);
+    max-width:720px;
+    margin:0 0 20px;
+  }
+  .deepdive p{margin:0 0 12px;}
+  .dd-tags{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px;}
+  .dd-tags span{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    background:rgba(31,111,139,.12);
+    padding:3px 9px;
+    border-radius:3px;
+  }
+  .dd-context{
+    font-size:15px;
+    margin:0 0 22px;
+  }
+  .experts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;}
+  .expert{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:16px 18px;
+    border-top:3px solid var(--accent);
+  }
+  .expert .role{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    margin:0 0 8px;
+    font-weight:700;
+  }
+  .expert .take{margin:0;font-size:14.5px;line-height:1.55;}
+  .expert .take b{font-weight:600;}
+  .deepdive h3{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    margin:0 0 7px;
+  }
+
+  /* ---------- Annexe : tableau « À patcher » ---------- */
+  .block-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    margin:0 0 4px;
+  }
+  .annex,.veille,.missions{padding:30px 44px;border-bottom:1px solid var(--line);}
+  .annex h2,.veille h2,.missions h2{
+    font-size:20px;
+    margin:0 0 8px;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  .annex-intro{font-size:14px;color:var(--ink-soft);margin:0 0 16px;max-width:640px;}
+  .patch-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;}
+  table.patch{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+    min-width:620px;
+  }
+  table.patch thead th{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    text-align:left;
+    padding:11px 14px;
+    background:var(--paper);
+    border-bottom:1px solid var(--line-strong);
+    white-space:nowrap;
+  }
+  table.patch tbody td{
+    padding:11px 14px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  table.patch tbody tr:last-child td{border-bottom:none;}
+  table.patch tbody tr:nth-child(even){background:#f6f8f9;}
+  table.patch .cve{font-family:var(--font-mono);font-size:12.5px;white-space:nowrap;}
+  table.patch .st{
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:#fff;
+    padding:2px 7px;
+    border-radius:3px;
+    white-space:nowrap;
+  }
+  table.patch .st.kev{background:var(--sev-crit);}
+  table.patch .st.camp{background:var(--sev-high);}
+  table.patch .st.poc{background:var(--sev-med);}
+
+  /* ---------- Veille courte ---------- */
+  .veille h2{margin-bottom:18px;}
+  .watch{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+  .watch-item{
+    background:var(--card);
+    padding:13px 16px;
+    display:grid;
+    grid-template-columns:120px 1fr;
+    gap:16px;
+    align-items:baseline;
+  }
+  .watch-item .w-tag{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .watch-item .w-body{font-size:14.5px;}
+  .watch-item .w-body b{font-weight:600;}
+  .watch-item .w-body .src{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+
+  /* ---------- Missions synthesis ---------- */
+  .missions{background:#f3f6f7;}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+  .mcard{background:var(--card);padding:18px 20px;}
+  .mcard.full{grid-column:1 / -1;}
+  .mcard h4{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.11em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    margin:0 0 10px;
+  }
+  .mcard ul{margin:0;padding-left:18px;}
+  .mcard li{margin-bottom:6px;font-size:14.5px;}
+  .mcard p{margin:0;font-size:14.5px;}
+  .codir{border-left:3px solid var(--ink);padding-left:14px;}
+
+  /* ---------- Footer ---------- */
+  footer{
+    padding:24px 44px 30px;
+    background:var(--ink);
+    color:#aebec7;
+    font-size:12.5px;
+  }
+  footer .f-top{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    color:#7fa6b6;
+    margin-bottom:10px;
+  }
+  footer b{color:#dce6eb;font-weight:600;}
+  footer .note{margin-top:14px;font-size:11.5px;color:#7d919c;font-style:italic;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:720px){
+    .masthead,.opener,.veille,.annex,.missions,.deepdive,footer{padding-left:22px;padding-right:22px;}
+    main{padding-left:22px;padding-right:22px;}
+    .masthead h1{font-size:27px;}
+    .deadlines{grid-template-columns:1fr;}
+    .experts{grid-template-columns:1fr;}
+    .mgrid{grid-template-columns:1fr;}
+    .watch-item{grid-template-columns:1fr;gap:4px;}
+    .tp{grid-template-columns:1fr;gap:8px;}
+    .topo dl{grid-template-columns:1fr;}
+    .topo dt{margin-top:6px;}
+    .t-num{font-size:26px;min-width:40px;}
+  }
+
+  /* ---------- Print ---------- */
+  @media print{
+    body{background:#fff;}
+    .sheet{box-shadow:none;max-width:none;}
+    .topic,.veille,.annex,.missions,.deepdive{break-inside:avoid;}
+    a{color:var(--ink);border:none;}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <!-- ======= MASTHEAD ======= -->
+  <header class="masthead">
+    <p class="eyebrow"><span>Veille cyber · Diffusion restreinte client</span><span>Édition n°001</span></p>
+    <h1>Brief cyber hebdomadaire</h1>
+    <div class="subline">
+      <span>Semaine du <b>6 juillet 2026</b></span>
+      <span>Période couverte : <b>29 juin – 6 juillet 2026</b></span>
+      <span>Zone prioritaire : <b>Océan Indien · La Réunion · Mayotte</b></span>
+      <span>Zone élargie : <b>France · Europe</b></span>
+    </div>
+  </header>
+
+  <!-- ======= BANDEAU D'OUVERTURE (remplace SITREP/KPI) ======= -->
+  <section class="opener">
+    <p class="opener-label">À porter en réunion cette semaine</p>
+
+    <div class="talkpoints">
+      <div class="tp">
+        <span class="tp-kind echo">Échéance</span>
+        <div class="tp-body">« Sauriez-vous <b>notifier une vulnérabilité activement exploitée sous 24 h</b> ? » — le Cyber Resilience Act l'impose à tout fabricant de produit numérique à partir du 11 septembre 2026. Peu de clients ont aujourd'hui le processus.</div>
+      </div>
+      <div class="tp">
+        <span class="tp-kind ctrl">Contrôle</span>
+        <div class="tp-body">« <b>Avez-vous l'inventaire des outils RMM/télémaintenance de vos prestataires et leur statut de correctif ?</b> » — une faille CVSS 10 sur SimpleHelp est activement exploitée pour rebondir de l'infogérant vers tous ses clients (mesure ISO 5.19-5.23).</div>
+      </div>
+      <div class="tp">
+        <span class="tp-kind">Exigence</span>
+        <div class="tp-body">« <b>La vitesse de détection est devenue un facteur de risque en soi.</b> » — première attaque ransomware documentée comme pilotée de bout en bout par une IA autonome : à intégrer comme scénario EBIOS RM.</div>
+      </div>
+    </div>
+
+    <p class="deadlines-label">Échéances réglementaires à l'horizon</p>
+    <div class="deadlines">
+      <div class="dl">
+        <div class="dl-days">67<small> j</small></div>
+        <div class="dl-what"><b>CRA</b> — signalement des vulnérabilités activement exploitées sous 24 h (alerte précoce).</div>
+        <div class="dl-date">11 septembre 2026</div>
+      </div>
+      <div class="dl">
+        <div class="dl-days">~18<small> mois</small></div>
+        <div class="dl-what"><b>CRA</b> — exigences essentielles &amp; marquage CE (à ne pas confondre avec l'échéance 24 h).</div>
+        <div class="dl-date">11 décembre 2027</div>
+      </div>
+      <div class="dl">
+        <div class="dl-days">En cours</div>
+        <div class="dl-what"><b>NIS2</b> — transposition FR &amp; référentiel ANSSI ReCyF disponible en base d'audit.</div>
+        <div class="dl-date">Applicable</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= 5 SUJETS ======= -->
+  <main>
+
+    <article class="topic">
+      <div class="topic-top">
+        <div class="t-num">01</div>
+        <div class="t-head">
+          <p class="t-cat"><span>À patcher cette semaine · Exploitation active</span><span class="sev crit">Critique</span></p>
+          <h2>SimpleHelp RMM : faille critique (CVSS 10) exploitée pour déployer des malwares de vol d'identifiants chez les MSP</h2>
+        </div>
+      </div>
+
+      <h3>Ce qui s'est passé</h3>
+      <p>CVE-2026-48558 affecte l'outil de télémaintenance SimpleHelp (contournement d'authentification via jetons OIDC non vérifiés, CVSS 10.0), un logiciel <b>exposé sur Internet et largement déployé chez les infogérants</b>. Ajoutée au catalogue <b>CISA KEV</b> le 29 juin 2026 avec échéance de remédiation au 2 juillet, la faille est activement exploitée : Arctic Wolf documente le déploiement de deux malwares inédits, TaskWeaver et Djinn Stealer, pour le vol d'identifiants et l'installation de portes dérobées persistantes. Environ 14 000 serveurs SimpleHelp sont exposés sur Internet, dont près de 1 000 jugés vulnérables faute de correctif.</p>
+
+      <h3>Pourquoi ça compte</h3>
+      <div class="why"><p>Un outil RMM est un point de bascule unique : le compromettre donne accès à l'ensemble du parc informatique de tous les clients gérés par le prestataire, quel que soit leur niveau de sécurité individuel. Pour les clients santé et collectivités qui externalisent leur infogérance, c'est un vecteur de compromission qui contourne entièrement leurs propres contrôles internes — exactement le risque fournisseur que ciblent les nouvelles exigences NIS2/CRA sur la supply chain. C'est le type même de faille qui répond à la question « qu'est-ce qu'il faut patcher cette semaine pour ne pas se faire hacker ».</p></div>
+
+      <h3>Actions client</h3>
+      <ul class="actions">
+        <li>Recenser tous les outils RMM/télémaintenance utilisés par les prestataires infogérants et vérifier leur statut de correctif SimpleHelp.</li>
+        <li>Exiger de chaque MSP une preuve de mise à jour et une revue des comptes/jetons d'authentification exposés.</li>
+        <li>Rechercher les indicateurs de compromission TaskWeaver/Djinn Stealer publiés par Arctic Wolf dans les journaux EDR.</li>
+      </ul>
+
+      <p class="sources"><span>Sources</span> CISA KEV · Arctic Wolf · <a href="https://thehackernews.com/2026/06/attackers-exploit-simplehelp-cve-2026.html">The Hacker News, 29 juin 2026</a> — <em>Les autres CVE exploitées de la semaine sont en annexe « À patcher ».</em></p>
+    </article>
+
+    <article class="topic">
+      <div class="topic-top">
+        <div class="t-num">02</div>
+        <div class="t-head">
+          <p class="t-cat"><span>Ransomware · Fuite de données</span><span class="sev high">Élevé</span></p>
+          <h2>« TheGentlemen » : groupe le plus actif de la semaine, quatre victimes européennes en 48 h dont le contractant de défense Indra</h2>
+        </div>
+      </div>
+
+      <h3>Un exemple de fuite</h3>
+      <p>Entre le 30 juin et le 1er juillet 2026, l'enseigne française <b>Au Vieux Campeur</b> a été revendiquée par TheGentlemen avec exfiltration de données RH, finance et clients/fournisseurs (CNIL notifiée). En parallèle, <b>Trenitalia France</b> a confirmé une fuite de données voyageurs (état civil, coordonnées, itinéraires) — <em>sans revendication ransomware identifiée à ce stade (non confirmé)</em>. Ces fuites se pistent en direct sur les traqueurs publics (ransomware.live, <a href="https://bonjourlafuite.eu.org">bonjourlafuite.eu.org</a>) — une revendication reste toutefois à vérifier, ce n'est pas une preuve.</p>
+
+      <h3>Topo — le groupe le plus actif</h3>
+      <div class="topo">
+        <h4>TheGentlemen — mode opératoire</h4>
+        <dl>
+          <dt>Ciblage</dt><dd>Opportuniste, multisectoriel : défense/aérospatial (Indra, ES), distribution électrique (EMAS, CZ), ESN (MakoLab, PL), retail (Au Vieux Campeur, FR) — 4 victimes revendiquées en 48 h.</dd>
+          <dt>Accès initial</dt><dd>Exploitation de services périmétriques exposés et comptes valides ; rebond vers les filiales moins défendues du groupe.</dd>
+          <dt>Extorsion</dt><dd>Double extorsion classique : chiffrement + vol de données, compte à rebours public (~236 h sur le cas Indra) sur site de fuite.</dd>
+          <dt>Cibles internes</dt><dd>Systématiquement RH, finance et CRM — d'où l'importance de tester la restauration de ces systèmes en priorité.</dd>
+        </dl>
+      </div>
+
+      <h3>Pourquoi ça compte</h3>
+      <div class="why"><p>Un même groupe frappe en série des secteurs très différents en 48 h : aucun secteur n'est protégé par sa seule nature. Le cas Indra illustre le risque qu'une compromission limitée à une filiale expose indirectement des données ou accès sensibles liés à des programmes de défense — scénario directement transposable aux clients OIV/OSE ayant des filiales ou partenaires moins bien défendus qu'eux.</p></div>
+
+      <h3>Actions client</h3>
+      <ul class="actions">
+        <li>Vérifier la segmentation réseau entre filiales/entités du groupe pour limiter la propagation latérale filiale → siège.</li>
+        <li>Tester la restauration réelle des sauvegardes (RTO/RPO) sur RH, finance et CRM, cibles systématiques de TheGentlemen.</li>
+        <li>Revoir les clauses contractuelles de notification d'incident avec les filiales et partenaires stratégiques.</li>
+      </ul>
+
+      <p class="sources"><span>Sources</span> ransomware.live · Cybernews · Darknetsearch · <a href="https://cybernews.com/security/indra-group-ransomware-attack-data-leak/">Cybernews, 30 juin 2026</a></p>
+    </article>
+
+    <article class="topic">
+      <div class="topic-top">
+        <div class="t-num">03</div>
+        <div class="t-head">
+          <p class="t-cat"><span>Menace émergente · Analyse</span><span class="sev crit">Signal fort</span></p>
+          <h2>JADEPUFFER : première attaque de ransomware documentée comme pilotée de bout en bout par un agent IA autonome</h2>
+        </div>
+      </div>
+
+      <h3>Le signal</h3>
+      <p>Le 2 juillet 2026, l'éditeur Sysdig publie une analyse de « JADEPUFFER », documenté comme la première opération de ransomware entièrement exécutée par un agent d'intelligence artificielle, sans supervision humaine continue. L'attaquant exploite CVE-2025-3248 (authentification manquante, CVSS 9.8) sur une instance Langflow exposée sur Internet, puis laisse un LLM enchaîner en autonomie reconnaissance, vol d'identifiants, mouvement latéral, escalade de privilèges et chiffrement/extorsion d'une base de production. Le lendemain, Sysdig documente une évolution parallèle du « LLMjacking » : des serveurs Ollama mal configurés détournés comme moteur de raisonnement d'un outil d'intrusion automatisé.</p>
+
+      <h3>Pourquoi c'est une bascule</h3>
+      <div class="why"><p>Jusqu'ici, l'IA générative servait surtout à rédiger du phishing ou du code de chargeur — JADEPUFFER est la première preuve opérationnelle qu'un cycle d'attaque complet peut tourner en autonomie, ce qui change l'échelle de vitesse et de volume à laquelle une organisation peut être touchée. Cette bascule fait écho à l'alerte conjointe Five Eyes du 23 juin 2026 : des modèles IA capables de mener des cyberattaques majeures sont attendus « dans quelques mois, pas des années ». <b>La vitesse de détection/réaction devient elle-même un axe de risque à part entière.</b></p></div>
+
+      <h3>Actions client</h3>
+      <ul class="actions">
+        <li>Recenser et fermer l'exposition Internet des plateformes LLMOps internes (Langflow, Ollama, LiteLLM) : cibles de premier rang, plus de simples outils de dev.</li>
+        <li>Intégrer un scénario « attaque pilotée par IA autonome » dans les prochains ateliers EBIOS RM, sur l'axe vitesse de détection/réaction.</li>
+        <li>Renforcer la surveillance des identités machine et clés API des outils IA internes (risque de détournement de calcul).</li>
+      </ul>
+
+      <p class="sources"><span>Sources</span> Sysdig · The Register · <a href="https://www.sysdig.com/blog/jadepuffer-agentic-ransomware-for-automated-database-extortion">Sysdig, 2 juillet 2026</a></p>
+    </article>
+
+    <article class="topic">
+      <div class="topic-top">
+        <div class="t-num">04</div>
+        <div class="t-head">
+          <p class="t-cat"><span>Réglementaire · Conformité</span><span class="sev high">Élevé</span></p>
+          <h2>Cyber Resilience Act : l'échéance du 11 septembre 2026 impose un signalement des vulnérabilités sous 24h</h2>
+        </div>
+      </div>
+
+      <h3>Ce qui s'est passé</h3>
+      <p>Le règlement européen sur la Résilience Cyber (CRA, 2024/2847) entre dans sa première phase réellement opérationnelle le 11 septembre 2026 : tout fabricant de « produit à éléments numériques » vendu dans l'UE devra notifier aux CSIRT/ENISA toute vulnérabilité activement exploitée sous 24h (alerte précoce), une notification complète sous 72h, et un rapport final sous 14 jours (vulnérabilité) ou 1 mois (incident grave). Cette échéance est distincte et bien antérieure à l'échéance principale du CRA (exigences essentielles, marquage CE) fixée au 11 décembre 2027 — confusion fréquente chez les clients. En parallèle, les autorités européennes de supervision financière (EBA/ESMA/EIOPA) ont publié le 3 juin 2026 leur premier rapport annuel DORA sur les incidents ICT majeurs : 3 383 incidents déclarés en 2025 par les entités financières européennes, dont un tiers lié à des prestataires tiers.</p>
+
+      <h3>Pourquoi ça compte</h3>
+      <div class="why"><p>Moins de 100 jours séparent la majorité des fabricants clients de leur première obligation de signalement CRA contraignante, alors que peu d'entre eux disposent aujourd'hui d'un processus formalisé de détection et notification de vulnérabilité en 24h. Le rapport DORA confirme par ailleurs qu'un tiers des incidents majeurs déclarés dans le secteur financier proviennent de prestataires tiers — la gestion du risque fournisseur devient le point de contrôle central de toutes les réglementations cyber européennes en cours.</p></div>
+
+      <h3>Actions client</h3>
+      <ul class="actions">
+        <li>Identifier les produits/logiciels clients entrant dans le périmètre CRA et vérifier l'existence d'un processus de détection de vulnérabilité activement exploitée sous 24h.</li>
+        <li>Cartographier les prestataires/fournisseurs critiques et vérifier les clauses contractuelles de notification d'incident (alignement NIS2/DORA/CRA).</li>
+        <li>Positionner une mission de diagnostic de conformité CRA avant l'échéance du 11 septembre 2026.</li>
+      </ul>
+
+      <p class="sources"><span>Sources</span> ANSSI · Commission européenne · ESMA/EBA/EIOPA · <a href="https://digital-strategy.ec.europa.eu/en/policies/cra-reporting">CRA reporting, Commission européenne</a></p>
+    </article>
+
+    <article class="topic">
+      <div class="topic-top">
+        <div class="t-num">05</div>
+        <div class="t-head">
+          <p class="t-cat"><span>Océan Indien · Régional</span><span class="sev med">À surveiller</span></p>
+          <h2>Aucun incident majeur cette semaine dans la zone : un réseau de fraude en ligne opérant depuis les Comores vise les résidents de Mayotte</h2>
+        </div>
+      </div>
+
+      <h3>Ce qui s'est passé</h3>
+      <p>Aucun incident de cybersécurité majeur (cyberattaque contre une collectivité, un établissement de santé ou une entreprise) ni aucune publication de l'Observatoire de la Cybersécurité de l'Océan Indien (OCOI) n'a été identifié spécifiquement sur la zone au cours des 7 derniers jours. Le développement le plus concret reste un dossier d'enquête publié par Mayotte Hebdo le 3 juillet 2026, documentant des réseaux de cybercriminels opérant depuis Ngazidja (Grande Comore) pour arnaquer des résidents mahorais via de fausses petites annonces en ligne, avec des complicités identifiées en métropole et à Mayotte. Ce point s'inscrit dans le prolongement du 1er Forum de la Cybersécurité de l'Océan Indien (FCOI), tenu les 17-18 juin 2026 à La Réunion, qui a réuni des intervenants de La Réunion, Madagascar, Maurice, Mayotte, Seychelles et Comores.</p>
+
+      <h3>Pourquoi ça compte</h3>
+      <div class="why"><p>L'absence d'incident majeur ne doit pas être lue comme une absence de risque : les clients basés à La Réunion et à Mayotte restent exposés à une cybercriminalité transfrontalière de proximité (fraude, ingénierie sociale) qui échappe souvent aux dispositifs de détection calibrés sur les menaces occidentales « classiques », dans un contexte de connectivité limitée, de dépendance aux prestataires métropolitains et de ressources cyber locales réduites qui ralentissent la détection et la réponse.</p></div>
+
+      <h3>Actions client</h3>
+      <ul class="actions">
+        <li>Sensibiliser les clients mahorais aux schémas de fraude par petites annonces et vérifier les procédures de vérification d'identité tierce avant tout paiement en ligne.</li>
+        <li>Relayer auprès des clients de la zone les travaux et contacts issus du Forum FCOI 2026 (OCOI) pour formaliser un canal d'alerte régional.</li>
+      </ul>
+
+      <p class="sources"><span>Sources</span> Mayotte Hebdo · OCOI / FCOI 2026 · <a href="https://www.mayottehebdo.com/actualite/dossier/des-cyber-criminels-operent-depuis-les-comores-pour-ecumer-mayotte/">Mayotte Hebdo, 3 juillet 2026</a></p>
+    </article>
+
+  </main>
+
+  <!-- ======= FOCUS THÉMATIQUE — AVIS D'EXPERTS ======= -->
+  <section class="deepdive">
+    <p class="block-label">Focus thématique · Avis d'experts</p>
+    <h2>La sécurité de la supply chain logicielle : le maillon que personne n'audite</h2>
+    <div class="dd-tags"><span>Supply chain logicielle</span><span>SBOM</span><span>Cyber Resilience Act</span></div>
+
+    <p class="dd-context">Un sujet de fond que tous les clients citent sans en maîtriser les implications. En clair : une application moderne assemble des centaines de briques open source, souvent maintenues par une poignée de bénévoles ; compromettre un « ingrédient » très en amont propage l'attaque à tous ceux qui lui font confiance sans le savoir (SolarWinds, XZ Utils, tj-actions, ver « Shai-Hulud » sur npm). Le rapport Sonatype 2026 recense 454 600 nouveaux paquets malveillants en 2025 (+67 %). Voici comment trois profils l'abordent.</p>
+
+    <div class="experts">
+      <div class="expert">
+        <p class="role">L'expert sécurité industrielle (OT/santé)</p>
+        <p class="take">« Dans un dispositif médical ou un automate, le vrai angle mort ce sont les <b>composants d'origine inconnue (SOUP)</b>. Je commencerais par exiger un <b>SBOM</b> de chaque fournisseur biomédical — aujourd'hui quasi absent des cahiers des charges — et par vérifier qu'une brique en fin de vie ne traîne pas dans un équipement qu'on ne peut pas patcher sans revalidation. »</p>
+      </div>
+      <div class="expert">
+        <p class="role">L'expert gestion de crise / résilience</p>
+        <p class="take">« Une compromission de dépendance, on ne l'empêche pas toujours — on doit surtout <b>savoir réagir vite</b>. Ma question en atelier : "si un composant de votre logiciel métier est corrompu, qui décide de l'arrêter, en combien de temps, et avec quel plan de repli ?" C'est exactement le tempo qu'impose le <b>signalement 24 h du CRA</b>. »</p>
+      </div>
+      <div class="expert">
+        <p class="role">L'auditeur / analyste de risque</p>
+        <p class="take">« En audit ISO 27002, je vérifie que les mesures <b>5.19-5.23</b> (relations fournisseurs) couvrent explicitement la <b>supply chain logicielle</b>, pas seulement les prestataires de services. Et j'ajoute la "compromission de la chaîne logicielle" comme <b>scénario stratégique EBIOS RM</b> à part entière — trop souvent, il est absent de l'atelier 3. »</p>
+      </div>
+      <div class="expert">
+        <p class="role">L'expert sensibilisation</p>
+        <p class="take">« Nouveau vecteur concret à faire connaître aux équipes dev : le <b>« slopsquatting »</b>. Les IA génératives hallucinent jusqu'à 27,8 % des noms de paquets qu'elles suggèrent, et des attaquants publient déjà ces faux paquets. Message simple : <b>on ne copie pas un nom de dépendance suggéré par une IA sans le vérifier.</b> »</p>
+      </div>
+    </div>
+
+    <h3>Actions à anticiper dès maintenant</h3>
+    <ul class="actions">
+      <li>Exiger/produire un SBOM (CycloneDX ou SPDX) pour tout logiciel critique interne et tiers, généré automatiquement dans les pipelines CI/CD.</li>
+      <li>Formaliser une gouvernance des dépendances open source (réputation mainteneur, fin de vie, SLA de patch) + clauses SBOM/notification 24-72h dans les appels d'offres.</li>
+      <li>Ajouter le scénario « compromission de la chaîne logicielle » aux missions EBIOS RM et le vérifier en audit ISO 27002 (mesures 5.19-5.23).</li>
+    </ul>
+
+    <p class="sources"><span>Sources</span> cyber.gouv.fr (ANSSI) · NIST/CSRC · CISA · ENISA · <a href="https://www.sonatype.com/state-of-the-software-supply-chain/2026/open-source-malware">Sonatype, State of the Software Supply Chain 2026</a></p>
+  </section>
+
+  <!-- ======= ANNEXE : TABLEAU « À PATCHER » ======= -->
+  <section class="annex">
+    <p class="block-label">Annexe</p>
+    <h2>À patcher cette semaine</h2>
+    <p class="annex-intro">Vulnérabilités en exploitation active (CISA KEV / campagnes recensées) sur des actifs courants et exposés sur Internet. Surface d'attaque périmétrique la plus commune — à vérifier en priorité.</p>
+    <div class="patch-scroll">
+      <table class="patch">
+        <thead>
+          <tr>
+            <th>CVE</th>
+            <th>Produit</th>
+            <th>Type / vecteur</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cve">CVE-2026-48558</td>
+            <td>SimpleHelp RMM</td>
+            <td>Bypass d'authentification (CVSS 10)</td>
+            <td><span class="st kev">KEV</span></td>
+            <td>Correctif éditeur — patcher immédiatement, auditer les jetons.</td>
+          </tr>
+          <tr>
+            <td class="cve">CVE-2026-45659</td>
+            <td>Microsoft SharePoint</td>
+            <td>RCE (CVSS 8.8)</td>
+            <td><span class="st kev">KEV</span></td>
+            <td>Correctif Microsoft dispo depuis mai — échéance FCEB 4 juillet.</td>
+          </tr>
+          <tr>
+            <td class="cve">CVE-2026-35273</td>
+            <td>Oracle PeopleSoft</td>
+            <td>0-day RH/paie (ShinyHunters)</td>
+            <td><span class="st camp">Campagne</span></td>
+            <td>Appliquer le correctif d'urgence Oracle, chasser l'exfiltration.</td>
+          </tr>
+          <tr>
+            <td class="cve">Campagne « FortiBleed »</td>
+            <td>FortiGate (~430 000 boîtiers)</td>
+            <td>Vol d'identifiants + sniffer</td>
+            <td><span class="st camp">Campagne</span></td>
+            <td>Rotation des identifiants, recherche de sniffer, lien ransomware INC/Lynx.</td>
+          </tr>
+          <tr>
+            <td class="cve">Citrix NetScaler / Exchange</td>
+            <td>Passerelles &amp; messagerie</td>
+            <td>Alerte CERT-FR active (ALE-005)</td>
+            <td><span class="st camp">Campagne</span></td>
+            <td>Vérifier les versions exposées, appliquer les mesures CERT-FR.</td>
+          </tr>
+          <tr>
+            <td class="cve">CVE-2026-50656</td>
+            <td>Microsoft Defender</td>
+            <td>Élévation de privilèges (0-day, PoC public)</td>
+            <td><span class="st poc">PoC / sans patch</span></td>
+            <td>Aucun correctif — surveiller, nouvelle divulgation annoncée le 14 juillet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ======= VEILLE COURTE ======= -->
+  <section class="veille">
+    <p class="block-label">Annexe</p>
+    <h2>Veille courte</h2>
+    <div class="watch">
+      <div class="watch-item">
+        <div class="w-tag">Fuite</div>
+        <div class="w-body"><b>Nissan Americas touché par le 0-day Oracle PeopleSoft.</b> Fuite de données RH/paie liée à l'exploitation de CVE-2026-35273 par le groupe ShinyHunters, plus de 100 organisations touchées au total. <span class="src">— BleepingComputer / SecurityWeek</span></div>
+      </div>
+      <div class="watch-item">
+        <div class="w-tag">Rapport CTI</div>
+        <div class="w-body"><b>Campagne « FortiBleed ».</b> Vol d'identifiants à grande échelle sur ~430 000 pare-feu FortiGate, sniffer déployé sur ~19 000 boîtiers, lien établi avec les opérations ransomware INC et Lynx. <span class="src">— BleepingComputer</span></div>
+      </div>
+      <div class="watch-item">
+        <div class="w-tag">Réglementaire</div>
+        <div class="w-body"><b>Premier rapport DORA sur les incidents ICT majeurs.</b> Les ESAs (EBA/ESMA/EIOPA) recensent 3 383 incidents déclarés en 2025 par les entités financières européennes, un tiers lié à des prestataires tiers. <span class="src">— ESMA / EBA / EIOPA</span></div>
+      </div>
+      <div class="watch-item">
+        <div class="w-tag">Océan Indien</div>
+        <div class="w-body"><b>Contexte institutionnel régional.</b> Symposium de la Cybersécurité de Madagascar (22-23 juin, Antananarivo) : réforme du cadre légal annoncée par le CIRT-MG ; à Maurice, les règlements sur les infrastructures d'information critiques sont entrés en vigueur le 1er juin 2026. <span class="src">— symposium.cirt.gov.mg / 2424.mg</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= SYNTHÈSE POUR MISSIONS ======= -->
+  <section class="missions">
+    <p class="block-label">À intégrer dans les missions</p>
+    <h2>Synthèse pour missions</h2>
+    <div class="mgrid">
+      <div class="mcard">
+        <h4>Contrôles ISO 27002 prioritaires</h4>
+        <ul>
+          <li>5.19-5.23 — Sécurité des relations fournisseurs (risque RMM/MSP, supply chain logicielle).</li>
+          <li>8.8 — Gestion des vulnérabilités techniques, délai de correction des CVE en exploitation active.</li>
+          <li>5.15-5.18, 8.5 — Contrôle des accès &amp; authentification (bypass SimpleHelp, MFA accès distants).</li>
+        </ul>
+      </div>
+      <div class="mcard">
+        <h4>Scénarios EBIOS RM concernés</h4>
+        <ul>
+          <li>Compromission via un prestataire d'infogérance/RMM (SimpleHelp).</li>
+          <li>Attaque ransomware pilotée par un agent IA autonome (JADEPUFFER).</li>
+          <li>Compromission d'une filiale ou d'un partenaire du groupe (Indra Group).</li>
+        </ul>
+      </div>
+      <div class="mcard">
+        <h4>Questions d'audit à ajouter</h4>
+        <ul>
+          <li>Disposez-vous d'un inventaire à jour des outils RMM/télémaintenance de vos prestataires et de leur statut de correctif ?</li>
+          <li>Seriez-vous en mesure de notifier une vulnérabilité activement exploitée sous 24h comme l'exige le CRA à partir du 11 septembre 2026 ?</li>
+        </ul>
+      </div>
+      <div class="mcard">
+        <h4>Idée d'exercice de crise</h4>
+        <p>Scénario : un prestataire d'infogérance externe (RMM) est compromis via une faille critique non corrigée, donnant accès simultané à plusieurs clients. Injections : le prestataire est injoignable pendant 48h, les sauvegardes sont partiellement chiffrées, un agent IA autonome accélère la propagation avant détection, la presse locale relaie l'incident, la CNIL doit être notifiée sous 72h.</p>
+      </div>
+      <div class="mcard full">
+        <h4>Message CODIR / sensibilisation dirigeants</h4>
+        <p class="codir">La rupture de cette semaine n'est pas seulement « plus de vulnérabilités » : c'est la première preuve qu'une attaque complète, de la reconnaissance à l'extorsion, peut désormais tourner sans opérateur humain — en parallèle d'une échéance réglementaire (CRA, 11 septembre 2026) qui exige de savoir réagir en 24h. La vitesse de détection et de décision devient elle-même un facteur de risque, autant que les vulnérabilités techniques.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= FOOTER ======= -->
+  <footer>
+    <p class="f-top">Brief cyber hebdomadaire</p>
+    <p>Généré le <b>6 juillet 2026</b> · Période couverte : 29 juin – 6 juillet 2026 · Sources : ANSSI, CERT-FR, ENISA, CISA (KEV), OCOI, ransomware.live, éditeurs et presse spécialisée (liens dans chaque section).</p>
+  </footer>
+
+</div>
+</body>
+</html>
